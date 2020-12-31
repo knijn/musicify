@@ -1,4 +1,6 @@
 local indexURL = "https://raw.githubusercontent.com/RubenHetKonijn/computronics-songs/main/index.json?cb=" .. os.epoch("utc")
+local version = 0.02
+
 
 if peripheral.find("tape_drive") == false then
   print("You should have a tape drive from computronics connected to the pc with a tape in it")
@@ -10,6 +12,10 @@ local indexJSON = handle.readAll()
 handle.close()
 local index = textutils.unserialiseJSON(indexJSON)
 local args = {...}
+
+if version < index.latestVersion then
+  print("Your client is not up to date, please consider updating")
+end
 
 if #args <= 0 then
   print("Usage: <action> [action args]")
@@ -50,3 +56,4 @@ elseif args[1] == "play" then
   tape.play()
 
 end
+
