@@ -1,5 +1,5 @@
 local indexURL = "https://raw.githubusercontent.com/RubenHetKonijn/computronics-songs/main/index.json?cb=" .. os.epoch("utc")
-local version = 0.02
+local version = 0.03
 
 
 if peripheral.find("tape_drive") == false then
@@ -12,6 +12,20 @@ local indexJSON = handle.readAll()
 handle.close()
 local index = textutils.unserialiseJSON(indexJSON)
 local args = {...}
+
+local function wipe()
+  local k = tape.getSize()
+  tape.stop()
+  tape.seek(-k)
+  tape.stop()
+  tape.seek(-90000)
+  local s = string.rep("\xAA", 8192)
+  for i = 1, k + 8191, 8192 do
+    tape.write(s)
+  end
+  tape.seek(-k)
+  tape.seek(-90000)
+end
 
 if version < index.latestVersion then
   print("Your client is not up to date, please consider updating")
@@ -26,6 +40,9 @@ if args[1] == "help" then
   print("       help  -- Displays this menu")
   print("       list -- Displays a list of songs you can play")
   print("       play <id> -- Plays the specified song")
+elseif args[1] == "stop" then
+  print("Stopping playback")
+  tape.stop()
 elseif args[1] == "list" then
   print("Music list format: `id | author - name`")
   for i in pairs(index.songs) do
@@ -42,7 +59,7 @@ elseif args[1] == "play" then
   end
   playID = tonumber(args[2])
   print("Writing and playing " .. index.songs[playID].author .. " - " .. index.songs[playID].name)
-
+  wipe()
   tape.stop()
   tape.seek(-tape.getSize()) -- go back to the start
 
@@ -54,6 +71,5 @@ elseif args[1] == "play" then
 
   tape.setSpeed(index.songs[playID].speed)
   tape.play()
-
 end
 
