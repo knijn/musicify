@@ -1,5 +1,5 @@
 local indexURL = "https://raw.githubusercontent.com/RubenHetKonijn/computronics-songs/main/index.json?cb=" .. os.epoch("utc")
-local version = 0.04
+local version = 0.041
 
 
 if peripheral.find("tape_drive") == false then
@@ -44,6 +44,7 @@ if args[1] == "help" then
   print("musicify help  -- Displays this menu")
   print("musicify list -- Displays a list of songs you can play")
   print("musicify play <id> -- Plays the specified song")
+  print("musicify play shuffle -- Starts shuffle mode")
   print("musicify stop -- Stops playback")
 elseif args[1] == "stop" then
   print("Stopping playback")
