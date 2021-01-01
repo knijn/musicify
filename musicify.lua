@@ -98,6 +98,10 @@ elseif args[1] == "shuffle" then
       sleep(index.songs[ranNum].time)
       end
 elseif args[1] == "play" then
+  if args[2] == "shuffle" then
+    print("This way of shuffling isn't supported anymore, use musicify shuffle")
+    return
+  end
   if tonumber(args[2]) <= 0 then
     print("ERROR: Please specify a song id, use the `list` action to see all music in a list")
     return
