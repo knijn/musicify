@@ -119,6 +119,17 @@ elseif args[1] == "shuffle" then
       play(index.songs[ranNum])
       sleep(index.songs[ranNum].time)
       end
+elseif args[1] == "volume" then
+  if not args[2] then
+    print("Please specify a volume level")
+    return
+  end
+  if tonumber(args[2]) <= 0 or tonumber(args[2]) >= 101 then
+    print("Please specify a volume level between 1-100")
+    return
+  end
+  volume = tonumber(args[2]) / 100
+  tape.setVolume(volume)
 elseif args[1] == "play" then
   if args[2] == "shuffle" then
     print("This way of shuffling isn't supported anymore, use musicify shuffle")
