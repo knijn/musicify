@@ -7,7 +7,7 @@ To install, run
 ```shell
 wget https://raw.githubusercontent.com/RubenHetKonijn/musicify/main/musicify.lua
 ```
-It should only take 2kB of data on your ComputerCraft computer.
+It should only take 4kB of data on your ComputerCraft computer.
 
 ## License
 Musicify is licensed under the [GNU General Public License v3.0](LICENSE).
