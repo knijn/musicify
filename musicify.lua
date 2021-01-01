@@ -1,8 +1,8 @@
 local indexURL = "https://raw.githubusercontent.com/RubenHetKonijn/computronics-songs/main/index.json?cb=" .. os.epoch("utc")
 local version = 0.05
 
-if peripheral.find("tape_drive") == false then
-  print("ERROR: You should have a tape drive from computronics connected to the pc with a tape in it")
+if not peripheral.find("tape_drive") then
+  error("Tapedrive not found")
 end
 local tape = peripheral.find("tape_drive")
 
@@ -11,7 +11,7 @@ local indexJSON = handle.readAll()
 handle.close()
 local index = textutils.unserialiseJSON(indexJSON)
 if not index then
-  print("ERROR: The index seems to be malformed, make an issue on github or dm RubenKnijn#0043 on Discord")
+  error("The index is malformed.")
   return
 end
 local args = {...}
