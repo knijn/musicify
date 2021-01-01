@@ -48,8 +48,26 @@ print("Writing and playing " .. songID.author .. " - " .. songID.name)
 end
 
 
+local function update()
+  local s = shell.getRunningProgram()
+  handle = http.get("https://raw.githubusercontent.com/RubenHetKonijn/musicify/main/musicify.lua")
+  if not handle then
+    print("Could not download new version, Please update manually.")
+  else
+    data = handle.readAll()
+    local f = fs.open(s, "w")
+    handle.close()
+    f.write(data)
+    f.close()
+    shell.run(s)
+    return
+  end
+end
+
+
 if version < index.latestVersion then
-  print("Your client is not up to date, please consider updating") -- Update check
+  print("Client outdated, Updating Musicify.") -- Update check
+  update()
 end
 
 if #args <= 0 then
@@ -63,6 +81,10 @@ if args[1] == "help" then
   print("musicify play <id> -- Plays the specified song")
   print("musicify shuffle [from] [to] -- Starts shuffle mode in a range if specified")
   print("musicify stop -- Stops playback")
+  print("musicify update -- Update musicify")
+elseif args[1] == "update" then
+  print("Updating musicify.")
+  update()
 elseif args[1] == "stop" then
   print("Stopping playback")
   tape.stop()
