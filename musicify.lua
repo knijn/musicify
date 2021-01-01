@@ -1,5 +1,5 @@
 local indexURL = "https://raw.githubusercontent.com/RubenHetKonijn/computronics-songs/main/index.json?cb=" .. os.epoch("utc")
-local version = 0.2
+local version = 0.05
 
 if not peripheral.find("tape_drive") then
   error("Tapedrive not found")
@@ -30,7 +30,6 @@ local function wipe()
   tape.seek(-90000)
 end
 
-
 local function play(songID)
 print("Writing and playing " .. songID.author .. " - " .. songID.name)
   wipe()
@@ -46,7 +45,6 @@ print("Writing and playing " .. songID.author .. " - " .. songID.name)
   tape.setSpeed(songID.speed)
   tape.play()
 end
-
 
 local function update()
   local s = shell.getRunningProgram()
@@ -64,7 +62,6 @@ local function update()
   end
 end
 
-
 if version < index.latestVersion then
   print("Client outdated, Updating Musicify.") -- Update check
   update()
@@ -74,6 +71,7 @@ if #args <= 0 then
   print("Usage: <action> [action args]")
   print("Try doing musicify help for a help menu")
 end
+
 if args[1] == "help" then
   print("Usage: <action> [action args]")
   print("musicify help  -- Displays this menu")
@@ -82,17 +80,22 @@ if args[1] == "help" then
   print("musicify shuffle [from] [to] -- Starts shuffle mode in a range if specified")
   print("musicify stop -- Stops playback")
   print("musicify update -- Update musicify")
+
 elseif args[1] == "update" then
   print("Updating musicify.")
   update()
+
 elseif args[1] == "stop" then
   print("Stopping playback")
   tape.stop()
+
 elseif args[1] == "list" then
   print("Music list format: `id | author - name`")
   for i in pairs(index.songs) do
     print(i .. " | " .. index.songs[i].author .. " - " .. index.songs[i].name)
   end
+  print("Use Mildly Better Shell if you want to scroll through the list")
+
 elseif args[1] == "shuffle" then
       if not args[2] then
         from = 1
@@ -119,6 +122,7 @@ elseif args[1] == "shuffle" then
       play(index.songs[ranNum])
       sleep(index.songs[ranNum].time)
       end
+
 elseif args[1] == "volume" then
   if not args[2] then
     print("Please specify a volume level")
@@ -130,7 +134,12 @@ elseif args[1] == "volume" then
   end
   volume = tonumber(args[2]) / 100
   tape.setVolume(volume)
+
 elseif args[1] == "play" then
+  if not args[2] then
+    print("Resuming playback...")
+    return
+  end
   if args[2] == "shuffle" then
     print("This way of shuffling isn't supported anymore, use musicify shuffle")
     return
