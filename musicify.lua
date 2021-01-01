@@ -1,5 +1,5 @@
 local indexURL = "https://raw.githubusercontent.com/RubenHetKonijn/computronics-songs/main/index.json?cb=" .. os.epoch("utc")
-local version = 0.041
+local version = 0.05
 
 if peripheral.find("tape_drive") == false then
   print("ERROR: You should have a tape drive from computronics connected to the pc with a tape in it")
