@@ -2,7 +2,12 @@ local indexURL = "https://raw.githubusercontent.com/RubenHetKonijn/computronics-
 local version = 0.1
 
 if not peripheral.find("tape_drive") then
-  error("Tapedrive not found")
+  print("ERROR: Tapedrive not found")
+  return
+end
+if not tape.isReady() then
+    print("ERROR: You need to have a tape in the tape drive")
+    return
 end
 local tape = peripheral.find("tape_drive")
 
@@ -148,10 +153,6 @@ elseif args[1] == "play" then
     return
   elseif tonumber(args[2]) > #index.songs then
     print("ERROR: The number you specified is out of bounds, try a lower number")
-    return
-  end
-  if not tape.isReady() then
-    print("ERROR: You need to have a tape in the tape drive")
     return
   end
   playID = tonumber(args[2])
