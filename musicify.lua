@@ -34,7 +34,7 @@ local function wipe()
 end
 
 local function play(songID)
-    print("Writing and playing " .. songID.author .. " - " .. songID.name)
+    print("Playing" .. songID.author .. " - " .. songID.name)
     wipe()
     tape.stop()
     tape.seek(-tape.getSize()) -- go back to the start
