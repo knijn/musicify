@@ -129,6 +129,7 @@ musicify.play = function (arguments)
     end
     if not tonumber(arguments[1]) or not index.songs[tonumber(arguments[1])] then
         print("Please provide a valid track ID. Use `list` to see all valid track numbers.")
+        return
     end
     if not tape.isReady() then
         print("ERROR: You need to have a tape in the tape drive")
