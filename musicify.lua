@@ -1,5 +1,5 @@
 local indexURL = "https://raw.githubusercontent.com/RubenHetKonijn/computronics-songs/main/index.json?cb=" .. os.epoch("utc")
-local version = 0.1
+local version = 0.2
 
 local args = {...}
 local musicify = {}
