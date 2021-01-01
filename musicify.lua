@@ -144,8 +144,14 @@ elseif args[1] == "play" then
     print("This way of shuffling isn't supported anymore, use musicify shuffle")
     return
   end
-  if tonumber(args[2]) <= 0 then
+  if not tonumber(args[2]) then
+    print("ERROR: Please provide a valid number.")
+    return
+  elseif tonumber(args[2]) <= 0 then
     print("ERROR: Please specify a song id, use the `list` action to see all music in a list")
+    return
+  elseif tonumber(args[2]) % 1 ~= 0 then
+    print("ERROR: The number specified must be whole.")
     return
   elseif tonumber(args[2]) > #index.songs then
     print("ERROR: The number you specified is out of bounds, try a lower number")
