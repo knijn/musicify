@@ -140,14 +140,7 @@ elseif args[1] == "play" then
     print("Resuming playback...")
     return
   end
-  if args[2] == "shuffle" then
-    print("This way of shuffling isn't supported anymore, use musicify shuffle")
-    return
-  end
-  if not tonumber(args[2]) then
-    print("ERROR: Please provide a valid number.")
-    return
-  elseif tonumber(args[2]) <= 0 then
+  elseif tonumber(args[2]) <= 0 or not tonumber(args[2]) then
     print("ERROR: Please specify a song id, use the `list` action to see all music in a list")
     return
   elseif tonumber(args[2]) % 1 ~= 0 then
