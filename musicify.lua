@@ -1,4 +1,5 @@
 local indexURL = "https://raw.githubusercontent.com/RubenHetKonijn/computronics-songs/main/index.json?cb=" .. os.epoch("utc")
+
 local version = 0.2
 
 local args = {...}
@@ -19,6 +20,14 @@ if not index then
     return
 end
 
+local function getSongID(songname)
+for i in pairs(index.songs) do
+        if index.songs[i].name == songname then
+          return i
+        end
+    end
+end
+
 local function wipe()
     local k = tape.getSize()
     tape.stop()
@@ -34,17 +43,17 @@ local function wipe()
 end
 
 local function play(songID)
-    print("Playing" .. songID.author .. " - " .. songID.name)
+    print("Playing " .. getSongID(songID.name) .. " | " .. songID.author .. " - " .. songID.name)
     wipe()
     tape.stop()
     tape.seek(-tape.getSize()) -- go back to the start
-    
+
     local h = http.get(songID.file, nil, true) -- write in binary mode
     tape.write(h.readAll()) -- that's it
     h.close()
-    
+
     tape.seek(-tape.getSize()) -- back to start again
-    
+
     tape.setSpeed(songID.speed)
     tape.play()
 end
@@ -115,8 +124,8 @@ musicify.shuffle = function (arguments)
 end
 
 musicify.volume = function (arguments)
-    if not arguments[1] or not tonumber(arguments[1]) or arguments[1]>100 or arguments[1] < 1 then
-        print("Please specify a valid volume level.")
+    if not arguments[1] or not tonumber(arguments[1]) or tonumber(arguments[1])>100 or tonumber(arguments[1]) < 1 then
+        print("Please specify a valid volume level between 0-100")
         return
     end
     tape.setVolume( arguments[1] / 100)
@@ -139,8 +148,10 @@ musicify.play = function (arguments)
     tape.play()
 end
 
-
-
+musicify.info = function (arguments)
+    print("Current version: " .. version)
+    print("Latest version: " .. index.latestVersion)
+end
 
 
 command = table.remove(args, 1)
