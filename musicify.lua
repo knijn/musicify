@@ -159,7 +159,6 @@ if command == "musicify" then
     return musicify
 elseif not command then
     print("Please provide a valid command. For usage, use `musicify help`.")
-    return musicify
 else
     musicify[command](args)
 end
