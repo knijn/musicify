@@ -8,7 +8,7 @@ local musicify = {}
 local tape = peripheral.find("tape_drive")
 
 if not tape then
-    error("Tapedrive not found")
+    print("ERROR: Tapedrive not found")
 end
 
 local handle = http.get(indexURL)
@@ -16,7 +16,7 @@ local indexJSON = handle.readAll()
 handle.close()
 local index = textutils.unserialiseJSON(indexJSON)
 if not index then
-    error("The index is malformed.")
+    print("ERROR: The index is malformed.")
     return
 end
 
@@ -114,12 +114,32 @@ end
 musicify.shuffle = function (arguments)
     local from = arguments[1] or 1
     local to = arguments[2] or #index.songs
+    if tostring(arguments[1]) and not tonumber(arguments[1]) and arguments[1] then
+        print("Please specify arguments like `musicify shuffle 1 5`")
+        return
+    end
     while true do
-        print("Currently in shuffle mode, press <CTRL>+T to exit.")
+        print("Currently in shuffle mode, press <CTRL>+T to exit. Use <Enter> to skip songs")
         local ranNum = math.random(from, to)
-        print("Currently playing: " .. index.songs[ranNum].name)
         play(index.songs[ranNum])
-        sleep(index.songs[ranNum].time)
+
+        -- Wait till the end of the song
+
+        local function songLengthWait()
+            sleep(index.songs[ranNum].time)
+        end
+
+        local function keyboardWait()
+            while true do
+                local event, key = os.pullEvent("key")
+                if key == keys.enter then
+                    print("Skipping!")
+                    break
+                end
+            end
+        end
+
+        parallel.waitForAny(songLengthWait,keyboardWait)
     end
 end
 
@@ -128,7 +148,7 @@ musicify.volume = function (arguments)
         print("Please specify a valid volume level between 0-100")
         return
     end
-    tape.setVolume( arguments[1] / 100)
+    tape.setVolume(arguments[1] / 100)
 end
 
 musicify.play = function (arguments)
@@ -153,6 +173,16 @@ musicify.info = function (arguments)
     print("Latest version: " .. index.latestVersion)
 end
 
+musicify.loop = function (arguments)
+    if tostring(arguments[1]) and not tonumber(arguments[1]) then
+        print("ERROR: Please specify a song ID")
+        return
+    end
+    while true do
+    play(index.songs[tonumber(arguments[1])])
+    sleep(index.songs[tonumber(arguments[1])].time)
+    end
+end
 
 command = table.remove(args, 1)
 
@@ -161,3 +191,5 @@ if not command then
 else
     musicify[command](args)
 end
+
+return musicify
