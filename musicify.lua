@@ -55,6 +55,9 @@ local function play(songID)
     tape.seek(-tape.getSize()) -- back to start again
 
     tape.setSpeed(songID.speed)
+    while tape.getState() ~= "STOPPED" then
+      sleep(1)
+    end
     tape.play()
 end
 
