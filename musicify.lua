@@ -77,6 +77,7 @@ end
 if version < index.latestVersion then
     print("Client outdated, Updating Musicify.") -- Update check
     update()
+    return
 end
 
 musicify.help = function (arguments)
