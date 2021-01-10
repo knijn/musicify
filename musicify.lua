@@ -7,6 +7,8 @@ local musicify = {}
 
 local tape = peripheral.find("tape_drive")
 
+
+
 if not tape then
     print("ERROR: Tapedrive not found")
 end
@@ -53,8 +55,10 @@ local function play(songID)
     h.close()
 
     tape.seek(-tape.getSize()) -- back to start again
-
     tape.setSpeed(songID.speed)
+    while tape.getState() ~= "STOPPED" do
+      sleep(1)
+    end
     tape.play()
 end
 
@@ -152,7 +156,6 @@ musicify.volume = function (arguments)
 end
 
 musicify.play = function (arguments)
-print(arguments[1])
     if not arguments then
         print("Resuming playback...")
         return
