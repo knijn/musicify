@@ -1,6 +1,6 @@
 local indexURL = "https://raw.githubusercontent.com/RubenHetKonijn/computronics-songs/main/index.json?cb=" .. os.epoch("utc")
 
-local version = 0.2
+local version = 0.3
 
 local args = {...}
 local musicify = {}
@@ -55,9 +55,6 @@ local function play(songID)
     tape.seek(-tape.getSize()) -- back to start again
 
     tape.setSpeed(songID.speed)
-    while tape.getState() ~= "STOPPED" do
-      sleep(1)
-    end
     tape.play()
 end
 
@@ -80,7 +77,6 @@ end
 if version < index.latestVersion then
     print("Client outdated, Updating Musicify.") -- Update check
     update()
-    return
 end
 
 musicify.help = function (arguments)
@@ -156,6 +152,7 @@ musicify.volume = function (arguments)
 end
 
 musicify.play = function (arguments)
+print(arguments[1])
     if not arguments then
         print("Resuming playback...")
         return
@@ -189,6 +186,8 @@ musicify.loop = function (arguments)
 end
 
 command = table.remove(args, 1)
+
+musicify.index = index
 
 if command == "musicify" then
     return musicify
