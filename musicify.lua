@@ -1,11 +1,13 @@
 local indexURL = "https://raw.githubusercontent.com/RubenHetKonijn/computronics-songs/main/index.json?cb=" .. os.epoch("utc")
 
-local version = 0.2
+local version = 0.3
 
 local args = {...}
 local musicify = {}
 
 local tape = peripheral.find("tape_drive")
+
+
 
 if not tape then
     print("ERROR: Tapedrive not found")
@@ -53,7 +55,6 @@ local function play(songID)
     h.close()
 
     tape.seek(-tape.getSize()) -- back to start again
-
     tape.setSpeed(songID.speed)
     while tape.getState() ~= "STOPPED" do
       sleep(1)
@@ -80,7 +81,6 @@ end
 if version < index.latestVersion then
     print("Client outdated, Updating Musicify.") -- Update check
     update()
-    return
 end
 
 musicify.help = function (arguments)
@@ -189,6 +189,8 @@ musicify.loop = function (arguments)
 end
 
 command = table.remove(args, 1)
+
+musicify.index = index
 
 if command == "musicify" then
     return musicify
