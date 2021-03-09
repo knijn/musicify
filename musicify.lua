@@ -1,16 +1,30 @@
 local indexURL = "https://raw.githubusercontent.com/RubenHetKonijn/computronics-songs/main/index.json?cb=" .. os.epoch("utc")
-
 local version = 0.3
-
 local args = {...}
 local musicify = {}
-
 local tape = peripheral.find("tape_drive")
+local devMode = 0
+local i = 1
+while i <= #args do
+    if args[i] == "-dev" then
+        devMode = 1
+        table.remove(args, i)
+    else
+        i = i + 1
+    end
+end
 
+local function debug(str)
+    if devMode == 1 then
+        oldTextColor = term.getTextColor()
+        term.setTextColor(colors.green)
+        print("DEBUG: " .. str)
+        term.setTextColor(oldTextColor)
+    end
+end
 
-
-if not tape then
-    print("ERROR: Tapedrive not found")
+if not tape then -- Check if there is a Tape Drive
+    print("ERROR: Tapedrive not found, Please place a Tape Drive next to the Computer or connect it with Networking Cables")
 end
 
 local handle = http.get(indexURL)
@@ -18,7 +32,7 @@ local indexJSON = handle.readAll()
 handle.close()
 local index = textutils.unserialiseJSON(indexJSON)
 if not index then
-    print("ERROR: The index is malformed.")
+    print("ERROR: The index is malformed. Please make an issue on the github if it already doesn't exist")
     return
 end
 
@@ -98,8 +112,8 @@ musicify
 end
 
 musicify.update = function (arguments)
-    print("Updating musicify, please hold on.")
-    update()
+    print("Updating Musicify, please hold on.")
+    update() -- Calls the update function to re-download the source code
 end
 
 musicify.stop = function (arguments)
@@ -112,7 +126,6 @@ musicify.list = function (arguments)
     for i in pairs(index.songs) do
         print(i .. " | " .. index.songs[i].author .. " - " .. index.songs[i].name)
     end
-    print("(Use Mildly Better Shell if you want to scroll through the list!)")
 end
 
 musicify.shuffle = function (arguments)
@@ -123,27 +136,28 @@ musicify.shuffle = function (arguments)
         return
     end
     while true do
-        print("Currently in shuffle mode, press <CTRL>+T to exit. Use <Enter> to skip songs")
+        print("Currently in shuffle mode, press <Q> to exit. Use <Enter> to skip songs")
         local ranNum = math.random(from, to)
         play(index.songs[ranNum])
 
-        -- Wait till the end of the song
-
-        local function songLengthWait()
+        local function songLengthWait() -- Wait till the end of the song
             sleep(index.songs[ranNum].time)
         end
 
-        local function keyboardWait()
+        local function keyboardWait() -- Wait for keyboard presses
             while true do
                 local event, key = os.pullEvent("key")
                 if key == keys.enter then
                     print("Skipping!")
                     break
+                elseif key == keys.q then
+                    musicify.stop()
+                    error("Stopped playing",0)
                 end
             end
         end
 
-        parallel.waitForAny(songLengthWait,keyboardWait)
+            parallel.waitForAny(songLengthWait, keyboardWait)          -- Combine the two above functions
     end
 end
 
@@ -189,8 +203,9 @@ musicify.loop = function (arguments)
 end
 
 command = table.remove(args, 1)
-
 musicify.index = index
+
+debug("Debug mode is enabled")
 
 if command == "musicify" then
     return musicify
@@ -199,5 +214,4 @@ elseif not command then
 else
     musicify[command](args)
 end
-
 return musicify
