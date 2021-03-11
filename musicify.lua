@@ -1,5 +1,5 @@
 local indexURL = "https://raw.githubusercontent.com/RubenHetKonijn/computronics-songs/main/index.json?cb=" .. os.epoch("utc")
-local version = 0.4
+local version = 0.41
 local args = {...}
 local musicify = {}
 local tape = peripheral.find("tape_drive")
@@ -31,6 +31,13 @@ local handle = http.get(indexURL)
 local indexJSON = handle.readAll()
 handle.close()
 local index = textutils.unserialiseJSON(indexJSON)
+
+if version > index.latestVersion then
+    devVer = true
+else
+    devVer = false
+end
+
 if not index then
     print("ERROR: The index is malformed. Please make an issue on the github if it already doesn't exist")
     return
@@ -189,11 +196,17 @@ end
 musicify.info = function (arguments)
     print("Current version: " .. version)
     print("Latest version: " .. index.latestVersion)
-    if devMode then
+    if devMode == 1 then
         print("DevMode: On")
     else
         print("DevMode: Off")
     end
+    if devVer == true then
+        print("Development Branch: True")
+    else
+        print("Development Branch: False")
+    end
+
 end
 
 musicify.loop = function (arguments)
@@ -253,7 +266,6 @@ musicify.index = index
 
 debug("Debug mode is enabled")
 local failedCommand = 0
-
 
 
 if musicify[command] then
