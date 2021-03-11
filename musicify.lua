@@ -1,5 +1,5 @@
 local indexURL = "https://raw.githubusercontent.com/RubenHetKonijn/computronics-songs/main/index.json?cb=" .. os.epoch("utc")
-local version = 0.3
+local version = 0.4
 local args = {...}
 local musicify = {}
 local tape = peripheral.find("tape_drive")
@@ -18,7 +18,7 @@ local function debug(str)
     if devMode == 1 then
         oldTextColor = term.getTextColor()
         term.setTextColor(colors.green)
-        print("DEBUG: " .. str)
+        print("DEBUG: " .. tostring(str))
         term.setTextColor(oldTextColor)
     end
 end
@@ -189,6 +189,11 @@ end
 musicify.info = function (arguments)
     print("Current version: " .. version)
     print("Latest version: " .. index.latestVersion)
+    if devMode then
+        print("DevMode: On")
+    else
+        print("DevMode: Off")
+    end
 end
 
 musicify.loop = function (arguments)
@@ -202,16 +207,59 @@ musicify.loop = function (arguments)
     end
 end
 
+musicify.playlist = function (arguments)
+    if not arguments[1] or not tostring(arguments[1]) or not fs.exists(arguments[1]) then
+        print("ERROR: Please specify a correct file")
+    end
+    debug("Got file")
+    local playlist = fs.open(arguments[1], "r") -- Load playlist file into a variable
+    local list = playlist.readAll() -- Also load playlist file into a variable
+    playlist.close()
+    local toPlay = {}
+
+    for word in string.gmatch(list, '([^,]+)') do
+        debug(word)
+        table.insert(toPlay,word)
+    end
+    for i,songID in pairs(toPlay) do
+        debug("i: " .. i)
+        debug("SongID " .. songID)
+        print("Currently in playlist mode, press <Q> to exit. Use <Enter> to skip songs")
+        play(index.songs[tonumber(songID)])
+
+        local function songLengthWait() -- Wait till the end of the song
+            sleep(index.songs[tonumber(songID)].time)
+        end
+
+        local function keyboardWait() -- Wait for keyboard presses
+            while true do
+                local event, key = os.pullEvent("key")
+                if key == keys.enter then
+                    print("Skipping!")
+                    break
+                elseif key == keys.q then
+                    musicify.stop()
+                    error("Stopped playing",0)
+                end
+            end
+        end
+
+            parallel.waitForAny(songLengthWait, keyboardWait)          -- Combine the two above functions
+    end
+end
+
 command = table.remove(args, 1)
 musicify.index = index
 
 debug("Debug mode is enabled")
+local failedCommand = 0
 
-if command == "musicify" then
-    return musicify
-elseif not command then
-    print("Please provide a valid command. For usage, use `musicify help`.")
-else
+
+
+if musicify[command] then
     musicify[command](args)
+else
+    print("Please provide a valid command. For usage, use `musicify help`.")
+    debug("Encountered a non-valid command")
 end
 return musicify
