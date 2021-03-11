@@ -9,6 +9,12 @@ wget run https://raw.githubusercontent.com/RubenHetKonijn/musicify/main/install.
 ```
 It should only take 6kB of data on your ComputerCraft computer.
 
+If you want to run the development version of Musicify, run
+
+```shell
+wget run https://raw.githubusercontent.com/RubenHetKonijn/musicify/dev/install.lua
+```
+
 ## License
 Musicify is licensed under the [GNU General Public License v3.0](LICENSE).
 
