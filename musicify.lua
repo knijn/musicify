@@ -14,7 +14,7 @@ while i <= #args do
     end
 end
 
-local function debug(str)
+local function debug(str) -- Debug function to display things when verbose mode is on (add -dev switch)
     if devMode == 1 then
         oldTextColor = term.getTextColor()
         term.setTextColor(colors.green)
@@ -32,7 +32,7 @@ local indexJSON = handle.readAll()
 handle.close()
 local index = textutils.unserialiseJSON(indexJSON)
 
-if version > index.latestVersion then
+if version > index.latestVersion then -- Check if running version is a development version
     devVer = true
 else
     devVer = false
@@ -120,7 +120,7 @@ end
 
 musicify.update = function (arguments)
     print("Updating Musicify, please hold on.")
-    update() -- Calls the update function to re-download the source code
+    update() -- Calls the update function to re-download the source code from the stable branch
 end
 
 musicify.stop = function (arguments)
@@ -130,7 +130,7 @@ end
 
 musicify.list = function (arguments)
     print("Format: `ID | Author - Name")
-    for i in pairs(index.songs) do
+    for i in pairs(index.songs) do -- Loop through all songs
         print(i .. " | " .. index.songs[i].author .. " - " .. index.songs[i].name)
     end
 end
@@ -138,7 +138,7 @@ end
 musicify.shuffle = function (arguments)
     local from = arguments[1] or 1
     local to = arguments[2] or #index.songs
-    if tostring(arguments[1]) and not tonumber(arguments[1]) and arguments[1] then
+    if tostring(arguments[1]) and not tonumber(arguments[1]) and arguments[1] then -- Check if selection is valid
         print("Please specify arguments like `musicify shuffle 1 5`")
         return
     end
@@ -194,7 +194,7 @@ musicify.play = function (arguments)
 end
 
 musicify.info = function (arguments)
-    print("Current version: " .. version)
+
     print("Latest version: " .. index.latestVersion)
     if devMode == 1 then
         print("DevMode: On")
@@ -202,9 +202,9 @@ musicify.info = function (arguments)
         print("DevMode: Off")
     end
     if devVer == true then
-        print("Development Branch: True")
+        print("Current version: " .. version .. " (Development Version)")
     else
-        print("Development Branch: False")
+        print("Current version: " .. version)
     end
 
 end
@@ -230,7 +230,7 @@ musicify.playlist = function (arguments)
     playlist.close()
     local toPlay = {}
 
-    for word in string.gmatch(list, '([^,]+)') do
+    for word in string.gmatch(list, '([^,]+)') do -- Seperate different song ID's from file
         debug(word)
         table.insert(toPlay,word)
     end
