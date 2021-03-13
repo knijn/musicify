@@ -1,5 +1,5 @@
 local indexURL = "https://raw.githubusercontent.com/RubenHetKonijn/computronics-songs/main/index.json?cb=" .. os.epoch("utc")
-local version = 0.41
+local version = 0.5
 local args = {...}
 local musicify = {}
 local tape = peripheral.find("tape_drive")
