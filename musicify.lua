@@ -14,7 +14,7 @@ while i <= #args do
     end
 end
 
-local function debug(str)
+local function debug(str) -- Debug function to display things when verbose mode is on (add -dev switch)
     if devMode == 1 then
         oldTextColor = term.getTextColor()
         term.setTextColor(colors.green)
@@ -32,7 +32,7 @@ local indexJSON = handle.readAll()
 handle.close()
 local index = textutils.unserialiseJSON(indexJSON)
 
-if version > index.latestVersion then
+if version > index.latestVersion then -- Check if running version is a development version
     devVer = true
 else
     devVer = false
@@ -120,7 +120,7 @@ end
 
 musicify.update = function (arguments)
     print("Updating Musicify, please hold on.")
-    update() -- Calls the update function to re-download the source code
+    update() -- Calls the update function to re-download the source code from the stable branch
 end
 
 musicify.stop = function (arguments)
@@ -128,9 +128,41 @@ musicify.stop = function (arguments)
     tape.stop()
 end
 
-musicify.list = function (arguments)
-    print("Format: `ID | Author - Name")
+local getArtistList = function()
+    local artistList = {}
+    for i,o in pairs(index.songs) do
+        for i2,o2 in pairs(artistList) do
+            if o2 == o then
+                debug("Found Duplicate")
+                return
+            end
+        end
+        table.insert(artistList,index.songs[i].author)
+    end
+    return artistList
+end
+
+local printArtistSongs = function(artist)
     for i in pairs(index.songs) do
+        if index.songs[i].author == artist then
+            print(i .. " | " .. index.songs[i].author .. " - " .. index.songs[i].name)
+        end
+    end
+end
+
+musicify.list = function (arguments)
+    if not arguments then
+        arguments[1] = uhgaeoygu
+    end
+    print("Format: `ID | Author - Name`")
+    local artists = getArtistList()
+    for i,o in pairs(artists) do
+        if arguments[1] == artists[i] then
+            printArtistSongs(artists[i])
+            return
+        end
+    end
+    for i in pairs(index.songs) do -- Loop through all songs
         print(i .. " | " .. index.songs[i].author .. " - " .. index.songs[i].name)
     end
 end
@@ -138,7 +170,7 @@ end
 musicify.shuffle = function (arguments)
     local from = arguments[1] or 1
     local to = arguments[2] or #index.songs
-    if tostring(arguments[1]) and not tonumber(arguments[1]) and arguments[1] then
+    if tostring(arguments[1]) and not tonumber(arguments[1]) and arguments[1] then -- Check if selection is valid
         print("Please specify arguments like `musicify shuffle 1 5`")
         return
     end
@@ -177,6 +209,23 @@ musicify.volume = function (arguments)
 end
 
 musicify.play = function (arguments)
+    local artists = getArtistList()
+    local songList = {}
+    if arguments[1] == "all" then
+        for i2,o2 in pairs(index.songs) do
+            local songID = "," .. tostring(i2)
+            table.insert(songList,songID)
+        end
+        local handle = fs.open(".musicifytmp","w")
+        for i,o in pairs(songList) do
+            local song = "," .. songList[i]
+            handle.write(song)
+        end
+        handle.close()
+        musicify.playlist({".musicifytmp"})
+        return
+    end
+
     if not arguments then
         print("Resuming playback...")
         return
@@ -194,7 +243,7 @@ musicify.play = function (arguments)
 end
 
 musicify.info = function (arguments)
-    print("Current version: " .. version)
+
     print("Latest version: " .. index.latestVersion)
     if devMode == 1 then
         print("DevMode: On")
@@ -202,9 +251,9 @@ musicify.info = function (arguments)
         print("DevMode: Off")
     end
     if devVer == true then
-        print("Development Branch: True")
+        print("Current version: " .. version .. " (Development Version)")
     else
-        print("Development Branch: False")
+        print("Current version: " .. version)
     end
 
 end
@@ -230,7 +279,7 @@ musicify.playlist = function (arguments)
     playlist.close()
     local toPlay = {}
 
-    for word in string.gmatch(list, '([^,]+)') do
+    for word in string.gmatch(list, '([^,]+)') do -- Seperate different song ID's from file
         debug(word)
         table.insert(toPlay,word)
     end
