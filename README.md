@@ -9,6 +9,8 @@ wget run https://raw.githubusercontent.com/RubenHetKonijn/musicify/main/install.
 ```
 It should only take 6kB of data on your ComputerCraft computer.
 
+
+
 ## License
 Musicify is licensed under the [GNU General Public License v3.0](LICENSE).
 
@@ -18,4 +20,11 @@ If you are confused about how to setup Musicify, please [check the wiki page](ht
 `* Disclaimer: Musicify does not stream from a server. It reads files from a local Tape Drive.`
 
 ## Development
-The program also should work as an api, this is not tested though
+The program also should work as an api, this is not tested though.
+If you want to support the program, please make a pull request. It helps out a ton
+
+If you want to run the development version of Musicify, run
+
+```shell
+wget run https://raw.githubusercontent.com/RubenHetKonijn/musicify/dev/install.lua
+```
