@@ -30,17 +30,18 @@ end
 local handle = http.get(indexURL)
 local indexJSON = handle.readAll()
 handle.close()
-local index = textutils.unserialiseJSON(indexJSON)
+local index, err = textutils.unserialiseJSON(indexJSON)
+
+if not index then
+    print("ERROR: The index is malformed. Please make an issue on the github if it already doesn't exist")
+    if err then error(err) end
+    return
+end
 
 if version > index.latestVersion then -- Check if running version is a development version
     devVer = true
 else
     devVer = false
-end
-
-if not index then
-    print("ERROR: The index is malformed. Please make an issue on the github if it already doesn't exist")
-    return
 end
 
 local function getSongID(songname)
