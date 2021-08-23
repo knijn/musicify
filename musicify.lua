@@ -1,10 +1,40 @@
-local indexURL = "https://raw.githubusercontent.com/RubenHetKonijn/computronics-songs/main/index.json?cb=" .. os.epoch("utc")
+local function debug(str) -- Debug function to display things when verbose mode is on
+    if devMode == 1 then
+        oldTextColor = term.getTextColor()
+        term.setTextColor(colors.green)
+        print("DEBUG: " .. tostring(str))
+        term.setTextColor(oldTextColor)
+    end
+end
+
+if fs.open("./musicify_config.json","r") then
+  debug("Config found")
+  config = textutils.unserialiseJSON(fs.open("./musicify_config.json", "r").readAll())
+end
+
+if not config.devMode then
+  devMode = 0
+elseif config.devMode == true then
+  devMode = 1
+end
+
+
+if not config.repo then
+  config.repo = "https://raw.githubusercontent.com/RubenHetKonijn/computronics-songs/main/index.json"
+end
+
+if not config.autoUpdates then
+  config.autoUpdates = true
+end
+
+local indexURL = config.repo .. "?cb=" .. os.epoch("utc")
 local version = 0.5
 local args = {...}
 local musicify = {}
 local tape = peripheral.find("tape_drive")
 local devMode = 0
 local i = 1
+-- Parse -dev argument switch, provided by Luca_S
 while i <= #args do
     if args[i] == "-dev" then
         devMode = 1
@@ -14,35 +44,29 @@ while i <= #args do
     end
 end
 
-local function debug(str) -- Debug function to display things when verbose mode is on (add -dev switch)
-    if devMode == 1 then
-        oldTextColor = term.getTextColor()
-        term.setTextColor(colors.green)
-        print("DEBUG: " .. tostring(str))
-        term.setTextColor(oldTextColor)
-    end
-end
+
 
 if not tape then -- Check if there is a Tape Drive
-    print("ERROR: Tapedrive not found, Please place a Tape Drive next to the Computer or connect it with Networking Cables")
+    error("Tapedrive not found, refer to the wiki on how to set up Musicify",0)
 end
 
 local handle = http.get(indexURL)
 local indexJSON = handle.readAll()
 handle.close()
-local index, err = textutils.unserialiseJSON(indexJSON)
-
-if not index then
-    print("ERROR: The index is malformed. Please make an issue on the github if it already doesn't exist")
-    if err then error(err) end
-    return
-end
+local index = textutils.unserialiseJSON(indexJSON)
 
 if version > index.latestVersion then -- Check if running version is a development version
     devVer = true
 else
     devVer = false
 end
+
+if not index then
+    error("The index is malformed. Please make an issue on the github if it already doesn't exist",0)
+    return
+end
+
+
 
 local function getSongID(songname)
 for i in pairs(index.songs) do
@@ -51,6 +75,13 @@ for i in pairs(index.songs) do
         end
     end
 end
+
+local function checkmissing(songID)
+  --if getSongID(songID.name) == nil or getSongID(songID.author) == nil or getSongID(songID.type) == nil or getSongID(songID.speed) == nil or getSongID(songID.file) == nil or getSongID(songID.time) == nil then
+  --  error("There seems to be an issue in the song we tried to access, please try again later and let the devs know.",0)
+  --end
+end
+
 
 local function wipe()
     local k = tape.getSize()
@@ -67,6 +98,7 @@ local function wipe()
 end
 
 local function play(songID)
+    checkmissing(songID)
     print("Playing " .. getSongID(songID.name) .. " | " .. songID.author .. " - " .. songID.name)
     wipe()
     tape.stop()
@@ -85,10 +117,13 @@ local function play(songID)
 end
 
 local function update()
+    if not config.autoUpdates then
+      error("It seems like you've disabled autoupdates, we're skipping this update", 0)
+    end
     local s = shell.getRunningProgram()
     handle = http.get("https://raw.githubusercontent.com/RubenHetKonijn/musicify/main/musicify.lua")
     if not handle then
-        print("Could not download new version, Please update manually.")
+        error("Could not download new version, Please update manually.",0)
     else
         data = handle.readAll()
         local f = fs.open(s, "w")
@@ -101,7 +136,7 @@ local function update()
 end
 
 if version < index.latestVersion then
-    print("Client outdated, Updating Musicify.") -- Update check
+    error("Client outdated, Updating Musicify.",0) -- Update check
     update()
 end
 
@@ -115,12 +150,15 @@ musicify
     play <id>  -- Plays the specified song by it's ID
     shuffle [from] [to] -- Starts shuffle mode in the specified range
     stop       -- Stops playback
-    Update     -- Updates musicify
+    volume [0-100] -- Changes the vulume
+    update     -- Updates musicify
+
 ]])
 end
 
 musicify.update = function (arguments)
     print("Updating Musicify, please hold on.")
+    config.autoUpdates = true
     update() -- Calls the update function to re-download the source code from the stable branch
 end
 
@@ -153,7 +191,7 @@ end
 
 musicify.list = function (arguments)
     if not arguments then
-        arguments[1] = uhgaeoygu
+      arguments[1] = uhgaeoygu
     end
     print("Format: `ID | Author - Name`")
     local artists = getArtistList()
@@ -172,7 +210,7 @@ musicify.shuffle = function (arguments)
     local from = arguments[1] or 1
     local to = arguments[2] or #index.songs
     if tostring(arguments[1]) and not tonumber(arguments[1]) and arguments[1] then -- Check if selection is valid
-        print("Please specify arguments like `musicify shuffle 1 5`")
+        erorr("Please specify arguments in a form like `musicify shuffle 1 5`",0)
         return
     end
     while true do
@@ -203,7 +241,7 @@ end
 
 musicify.volume = function (arguments)
     if not arguments[1] or not tonumber(arguments[1]) or tonumber(arguments[1])>100 or tonumber(arguments[1]) < 1 then
-        print("Please specify a valid volume level between 0-100")
+        error("Please specify a valid volume level between 0-100",0)
         return
     end
     tape.setVolume(arguments[1] / 100)
@@ -232,11 +270,11 @@ musicify.play = function (arguments)
         return
     end
     if not tonumber(arguments[1]) or not index.songs[tonumber(arguments[1])] then
-        print("Please provide a valid track ID. Use `list` to see all valid track numbers.")
+        error("Please provide a valid track ID. Use `list` to see all valid track numbers.",0)
         return
     end
     if not tape.isReady() then
-        print("ERROR: You need to have a tape in the tape drive")
+        error("You need to have a tape in the tape drive",0)
         return
     end
     play(index.songs[tonumber(arguments[1])])
@@ -261,7 +299,7 @@ end
 
 musicify.loop = function (arguments)
     if tostring(arguments[1]) and not tonumber(arguments[1]) then
-        print("ERROR: Please specify a song ID")
+        error("Please specify a song ID",0)
         return
     end
     while true do
@@ -272,7 +310,7 @@ end
 
 musicify.playlist = function (arguments)
     if not arguments[1] or not tostring(arguments[1]) or not fs.exists(arguments[1]) then
-        print("ERROR: Please specify a correct file")
+        error("Please specify a correct file")
     end
     debug("Got file")
     local playlist = fs.open(arguments[1], "r") -- Load playlist file into a variable
