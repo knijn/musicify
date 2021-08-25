@@ -12,6 +12,8 @@ if fs.open("./musicify_config.json","r") then
   config = textutils.unserialiseJSON(fs.open("./musicify_config.json", "r").readAll())
 end
 
+if not config then config = {} end -- Hotfix to make Musicify work when no config is available
+
 if not config.devMode then
   devMode = 0
 elseif config.devMode == true then
