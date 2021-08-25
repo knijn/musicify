@@ -30,7 +30,7 @@ if not config.autoUpdates then
 end
 
 local indexURL = config.repo .. "?cb=" .. os.epoch("utc")
-local version = 0.6
+local version = 0.61
 local args = {...}
 local musicify = {}
 local tape = peripheral.find("tape_drive")
