@@ -212,7 +212,7 @@ musicify.shuffle = function (arguments)
     local from = arguments[1] or 1
     local to = arguments[2] or #index.songs
     if tostring(arguments[1]) and not tonumber(arguments[1]) and arguments[1] then -- Check if selection is valid
-        erorr("Please specify arguments in a form like `musicify shuffle 1 5`",0)
+        error("Please specify arguments in a form like `musicify shuffle 1 5`",0)
         return
     end
     while true do
