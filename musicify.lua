@@ -147,15 +147,18 @@ musicify.help = function (arguments)
 Usage: <action> [arguments]
 Actions:
 musicify
-    help       -- Displays this message
-    list       -- Displays a list of song you can play
-    play <id>  -- Plays the specified song by it's ID
-    shuffle [from] [to] -- Starts shuffle mode in the specified range
-    stop       -- Stops playback
-    volume [0-100] -- Changes the vulume
-    update     -- Updates musicify
-
+  help      -- Displays this message
+  list      -- Displays a list of song you can play
+  loop <id> -- Loop on a song
+  play <id> -- Plays the specified song by it's ID
+  playlist <file> -- Plays a playlist file
+  shuffle [from] [to] -- Starts shuffle mode
+  stop       -- Stops playback
+  volume <0-100> -- Changes the vulume
+  update     -- Updates musicify
+  info -- Shows information about Musicify
 ]])
+end
 end
 
 musicify.update = function (arguments)
