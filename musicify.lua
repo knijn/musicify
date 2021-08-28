@@ -12,8 +12,6 @@ if fs.open("./musicify_config.json","r") then
   config = textutils.unserialiseJSON(fs.open("./musicify_config.json", "r").readAll())
 end
 
-if not config then config = {} end -- Hotfix to make Musicify work when no config is available
-
 if not config.devMode then
   devMode = 0
 elseif config.devMode == true then
@@ -29,8 +27,9 @@ if not config.autoUpdates then
   config.autoUpdates = true
 end
 
+local generalURL = "https://raw.githubusercontent.com/knijn/musicify-songs/main/general.json?cb=" .. os.epoch("utc")
 local indexURL = config.repo .. "?cb=" .. os.epoch("utc")
-local version = 0.7
+local version = 0.8
 local args = {...}
 local musicify = {}
 local tape = peripheral.find("tape_drive")
@@ -53,9 +52,14 @@ if not tape then -- Check if there is a Tape Drive
 end
 
 local handle = http.get(indexURL)
-local indexJSON = handle.readAll()
+local index = textutils.unserialiseJSON(handle.readAll())
 handle.close()
-local index = textutils.unserialiseJSON(indexJSON)
+
+local handle2 = http.get(generalURL)
+local general = textutils.unserialiseJSON(handle2.readAll())
+handle2.close()
+local premium = nil
+
 
 if version > index.latestVersion then -- Check if running version is a development version
     devVer = true
@@ -68,7 +72,49 @@ if not index then
     return
 end
 
+-- Check for premium
+for i,o in pairs(general.premium) do
+  debug(general.premium[i].id)
+  debug(os.computerID())
+  if general.premium[i].id == os.computerID() then
+    debug("Premium Detected")
+    premium = true
+  else
+    debug("Premium is not enabled")
+    premium = false
+  end
+end
 
+local function playAd()
+  if premium then
+    return
+  end
+
+  local ranNum = math.random(1, #general.ads)
+  if general.ads[ranNum].type == "text" then
+    print("AD: " .. general.ads[ranNum].content)
+  elseif general.ads[ranNum].type == "audio" then
+    wipe()
+    tape.stop()
+    tape.seek(-tape.getSize()) -- go back to the start
+
+    local h = http.get(general.ads[ranNum].content, nil, true) -- write in binary mode
+    tape.write(h.readAll()) -- that's it
+    h.close()
+
+    tape.seek(-tape.getSize()) -- back to start again
+    tape.setSpeed(general.ads[ranNum].speed)
+    while tape.getState() ~= "STOPPED" do
+      sleep(1)
+    end
+    tape.play()
+  end
+end
+
+local function checkAd()
+  local value = math.random(1,8)
+  if value == 1 then playAd() end
+end
 
 local function getSongID(songname)
 for i in pairs(index.songs) do
@@ -147,15 +193,21 @@ musicify.help = function (arguments)
 Usage: <action> [arguments]
 Actions:
 musicify
-    help       -- Displays this message
-    list       -- Displays a list of song you can play
-    play <id>  -- Plays the specified song by it's ID
-    shuffle [from] [to] -- Starts shuffle mode in the specified range
-    stop       -- Stops playback
-    volume [0-100] -- Changes the vulume
-    update     -- Updates musicify
-
+  help      -- Displays this message
+  list      -- Displays a list of song you can play
+  loop <id> -- Loop on a song
+  play <id> -- Plays the specified song by it's ID
+  playlist <file> -- Plays a playlist file
+  shuffle [from] [to] -- Starts shuffle mode
+  stop       -- Stops playback
+  volume <0-100> -- Changes the vulume
+  update     -- Updates musicify
+  info -- Shows information about Musicify
 ]])
+end
+
+musicify.ad = function (arguments)
+  playAd()
 end
 
 musicify.update = function (arguments)
@@ -193,7 +245,7 @@ end
 
 musicify.list = function (arguments)
     if not arguments then
-      arguments[1] = uhgaeoygu
+      arguments[1] = uhgaeoyg356ghu
     end
     print("Format: `ID | Author - Name`")
     local artists = getArtistList()
@@ -250,6 +302,7 @@ musicify.volume = function (arguments)
 end
 
 musicify.play = function (arguments)
+    checkAd()
     local artists = getArtistList()
     local songList = {}
     if arguments[1] == "all" then
@@ -296,7 +349,7 @@ musicify.info = function (arguments)
     else
         print("Current version: " .. version)
     end
-
+    print("Premium: " .. tostring(premium))
 end
 
 musicify.loop = function (arguments)
