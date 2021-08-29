@@ -568,7 +568,7 @@ local function checkInput()
             
                 selection = selection +1
                 maxSelectionNameScroll = string.len(index.songs[selection].name) -13 
-                maxSelectionAuthorScroll = string.len(index.song[selection].author) -10
+                maxSelectionAuthorScroll = string.len(index.songs[selection].author) -10
                 selectionNameScroll = 0
                 selectionAuthorScroll = 0
             
@@ -579,7 +579,7 @@ local function checkInput()
         
                 selection = selection -1
                 maxSelectionNameScroll = string.len(index.songs[selection].name) -13
-                maxSelectionAuthorScroll = string.len(index.song[selection].author) -10
+                maxSelectionAuthorScroll = string.len(index.songs[selection].author) -10
                 selectionNameScroll = 0
                 selectionAuthorScroll = 0
             
