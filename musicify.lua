@@ -18,7 +18,6 @@ elseif config.devMode == true then
   devMode = 1
 end
 
-
 if not config.repo then
   config.repo = "https://raw.githubusercontent.com/RubenHetKonijn/computronics-songs/main/index.json"
 end
@@ -26,6 +25,8 @@ end
 if not config.autoUpdates then
   config.autoUpdates = true
 end
+
+-- VARIABLES --
 
 local generalURL = "https://raw.githubusercontent.com/knijn/musicify-songs/main/general.json?cb=" .. os.epoch("utc")
 local indexURL = config.repo .. "?cb=" .. os.epoch("utc")
@@ -35,6 +36,49 @@ local musicify = {}
 local tape = peripheral.find("tape_drive")
 local devMode = 0
 local i = 1
+
+local backGroundColor = colors.black
+ 
+local headerTextColor = colors.green
+local headerOffset = 0
+ 
+local tableTextColor = colors.yellow
+local musicTextColor = colors.white
+ 
+local selectedColor = colors.blue
+local playingColor = colors.green
+ 
+local footerBackGroundColor = colors.white
+local footerTextColor = colors.black
+ 
+local parentRowPosition = 2
+ 
+local trackRowPosition = parentRowPosition + 1
+local songRowPosition = parentRowPosition + 8
+local authorRowPosition = parentRowPosition + 25
+local timeRowPosition = parentRowPosition + 40
+ 
+local screenWidth, screenHeight = term.getSize()
+local halfScreen = screenWidth / 2
+
+local scroll = 0
+
+local selection = 0
+local selectionNameScroll = 0
+local maxSelectionNameScroll = 0
+
+local selectionAuthorScroll = 0
+local maxSelectionAuthorScroll = 0
+
+local currentSong = 0
+local playingNameScroll = 0
+local maxPlayingNameScroll = 0
+
+local playingAuthorScroll = 0
+local maxPlayingAuthorScroll = 0
+
+-- BUSINESS --
+
 -- Parse -dev argument switch, provided by Luca_S
 while i <= #args do
     if args[i] == "-dev" then
@@ -414,7 +458,192 @@ local failedCommand = 0
 if musicify[command] then
     musicify[command](args)
 else
-    print("Please provide a valid command. For usage, use `musicify help`.")
-    debug("Encountered a non-valid command")
+    parallel.waitForAny(drawGUI,checkInput,tick)
 end
+
+-- VISUAL LAYER --
+ 
+local function secondsToClock(seconds)
+    if seconds <= 0 then
+        return "00:00:00";
+    else
+        mins = string.format("%02.f", math.floor(seconds/60));
+        secs = string.format("%02.f", math.floor(seconds - mins *60));
+        return mins..":"..secs
+    end
+end
+ 
+local function drawHeader()
+    term.setBackgroundColor(backGroundColor)
+    term.setTextColor(headerTextColor)
+    term.clear()
+ 
+    term.setCursorPos(halfScreen - (string.len(applicationName) / 2) + headerOffset, 1)
+ 
+    print(applicationName)
+end
+ 
+local function drawMusicList()
+    term.setBackgroundColor(backGroundColor)
+    term.setTextColor(tableTextColor)
+    
+    term.setCursorPos(trackRowPosition, 2)
+    term.write("Track")
+
+    term.setCursorPos(timeRowPosition, 2)
+    term.write("Duration")
+
+    term.setCursorPos(songRowPosition, 2)
+    term.write("Name")
+    
+    term.setCursorPos(authorRowPosition, 2)
+    term.write("Author")
+ 
+    term.setTextColor(musicTextColor)
+ 
+    for i in pairs(index.songs) do
+        if i < screenHeight -2 then
+            local track = i + scroll
+ 
+            term.setCursorPos(1, i +2)
+            
+            -- Change the color of the selectoins
+            if selection - scroll == i then
+                term.setBackgroundColor(selectedColor)
+            elseif track == currentSong then
+                term.setBackgroundColor(playingColor)
+            else
+                term.setBackgroundColor(backGroundColor)
+            end
+            
+            term.setCursorPos(trackRowPosition, i + 2)
+            term.write(track)
+ 
+            term.setCursorPos(timeRowPosition, i + 2)
+            term.write(secondsToClock(index.songs[track].time))
+ 
+            term.setCursorPos(songRowPosition, i + 2)
+            if string.len(index.songs[track].name) < 15 then
+                term.write(index.songs[track].name)
+            elseif selection - scroll == i then
+                term.write(string.sub(index.songs[track].name, selectionNameScroll +1, selectionNameScroll + 12) .. '...')
+            elseif track == currentSong then 
+                term.write(string.sub(index.songs[track].name, playingNameScroll +1, playingNameScroll + 12) .. '...')
+            else
+                term.write(string.sub(index.songs[track].name, 0, 12) .. '...')
+            end
+ 
+            term.setCursorPos(authorRowPosition, i + 2)
+            if string.len(index.songs[track].author) < 12 then
+                term.write(index.songs[track].author)
+            elseif selection - scroll == i then
+                term.write(string.sub(index.songs[track].author, selectionAuthorScroll +1, selectionAuthorScroll + 9) .. '...')
+            elseif track == currentSong then 
+                term.write(string.sub(index.songs[track].author, playingAuthorScroll +1, playingAuthorScroll + 9) .. '...')
+            else
+                term.write(string.sub(index.songs[track].author, 0, 9) .. '...')
+            end
+        else
+            break
+        end
+    end
+end
+ 
+local function drawFooter()
+    term.setBackgroundColor(footerBackGroundColor)
+    term.setTextColor(footerTextColor)
+ 
+    term.setCursorPos(1, screenHeight)
+ 
+    if currentSong == 0 then
+        term.write("Play")
+    else
+         term.write("Stop")
+    end
+ 
+    term.setCursorPos(halfScreen - 4, screenHeight)
+ 
+    term.write("Shuffle")
+end
+
+-- GUI Logic
+ 
+local function checkInput()
+    while true do
+        local event, key = os.pullEvent()
+    
+        if event == "key" then
+            if key == 208 and selection < #index.songs then
+                if selection - scroll >= screenHeight -3 then
+                    scroll = scroll +1
+                end
+            
+                selection = selection +1
+                maxSelectionNameScroll = string.len(index.songs[selection].name) -13 
+                maxSelectionAuthorlScroll = string.len(index.song[selection].author) -10
+                selectionNameScroll = 0
+                selectionAuthorScroll = 0
+            
+            elseif key == 200 and selection > 1 then
+                if selection - scroll <= 1 and scroll > 0 then
+                    scroll = scroll -1
+                end
+        
+                selection = selection -1
+                maxSelectionNameScroll = string.len(index.songs[selection].name) -13
+                maxSelectionAuthorScroll = string.len(index.song[selection].author) -10
+                selectionNameScroll = 0
+                selectionAuthorScroll = 0
+            
+            elseif key == 28 then
+                play(index.songs[selection])
+                currentSong = selection
+
+                maxPlayingNameScroll = string.len(index.songs[currentSong].name) -13
+                maxPlayingAuthorScroll =  string.len(index.songs[currentSong].author) -10
+                playingNameScroll = 0
+                playingAuthorScroll = 0
+            end
+        end
+    end
+end
+
+local function tick()
+    while true do
+        selectionNameScroll = selectionNameScroll +1
+        selectionAuthorScroll = selectionAuthorScroll +1
+
+        playingNameScroll = playingNameScroll +1
+        playingAuthorScroll = playingAuthorScroll +1
+     
+        if selectionNameScroll > maxSelectionNameScroll then
+            selectionNameScroll = 0
+        end
+
+        if selectionAuthorScroll > maxSelectionAuthorScroll then 
+            selectionAuthorScroll = 0
+        end
+
+        if playingNameScroll > maxPlayingNameScroll then
+            playingNameScroll = 0
+        end
+
+        if playingAuthorScroll > maxPlayingAuthorScroll then 
+            playingAuthorScroll = 0
+        end
+
+        sleep(0.4)
+    end
+end
+
+local function drawGUI()
+    while true do
+        drawHeader()
+        drawMusicList()
+        drawFooter()
+        sleep()
+    end
+end
+
+parallel.waitForAny(drawGUI,checkInput,tick)
 return musicify
