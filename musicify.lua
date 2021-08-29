@@ -448,19 +448,6 @@ musicify.playlist = function (arguments)
     end
 end
 
-command = table.remove(args, 1)
-musicify.index = index
-
-debug("Debug mode is enabled")
-local failedCommand = 0
-
-
-if musicify[command] then
-    musicify[command](args)
-else
-    parallel.waitForAny(drawGUI,checkInput,tick)
-end
-
 -- VISUAL LAYER --
  
 local function secondsToClock(seconds)
@@ -645,5 +632,17 @@ local function drawGUI()
     end
 end
 
-parallel.waitForAny(drawGUI,checkInput,tick)
+command = table.remove(args, 1)
+musicify.index = index
+
+debug("Debug mode is enabled")
+local failedCommand = 0
+
+
+if musicify[command] then
+    musicify[command](args)
+else
+    parallel.waitForAny(drawGUI,checkInput,tick)
+end
+
 return musicify
