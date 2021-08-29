@@ -30,6 +30,7 @@ end
 
 local generalURL = "https://raw.githubusercontent.com/knijn/musicify-songs/main/general.json?cb=" .. os.epoch("utc")
 local indexURL = config.repo .. "?cb=" .. os.epoch("utc")
+local applicationName = "Musicify"
 local version = 0.8
 local args = {...}
 local musicify = {}
