@@ -591,8 +591,8 @@ local function checkInput()
                     play(index.songs[selection])
                     currentSong = selection
 
-                    maxPlayingNameScroll = string.len(index.songs[currentSong].name) -13
-                    maxPlayingAuthorScroll =  string.len(index.songs[currentSong].author) -10
+                    maxPlayingNameScroll = string.len(index.songs[currentSong].name) -12
+                    maxPlayingAuthorScroll =  string.len(index.songs[currentSong].author) -9
                     playingNameScroll = 0
                     playingAuthorScroll = 0
                 end
@@ -607,8 +607,8 @@ local function checkInput()
             end
     
             selection = selection + key
-            maxSelectionNameScroll = string.len(index.songs[selection].name) -13
-            maxSelectionAuthorScroll = string.len(index.songs[selection].author) -10
+            maxSelectionNameScroll = string.len(index.songs[selection].name) -12
+            maxSelectionAuthorScroll = string.len(index.songs[selection].author) -9
             selectionNameScroll = 0
             selectionAuthorScroll = 0
         elseif event == "mouse_click" then
@@ -629,6 +629,10 @@ local function checkInput()
                 end
             else
                 selection = scroll + y -2
+                maxSelectionNameScroll = string.len(index.songs[selection].name) -12
+                maxSelectionAuthorScroll = string.len(index.songs[selection].author) -9
+                selectionNameScroll = 0
+                selectionAuthorScroll = 0
             end
         end
     end
