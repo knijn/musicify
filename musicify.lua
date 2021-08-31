@@ -612,8 +612,21 @@ local function checkInput()
             selectionNameScroll = 0
             selectionAuthorScroll = 0
         elseif event == "mouse_click" then
-            if x <= halfScreen - 4 and x > halfScreen + 3 and y == screenHeight then
+            if x >= halfScreen - 4 and x <= halfScreen + 3 and y == screenHeight then
                 musicify.shuffle({1,70})
+            elseif  x >= 0 and x <= 4 and y == screenHeight then
+                if currentSong == selection then
+                    tape.stop()
+                    currentSong = -1
+                else
+                    play(index.songs[selection])
+                    currentSong = selection
+
+                    maxPlayingNameScroll = string.len(index.songs[currentSong].name) -13
+                    maxPlayingAuthorScroll =  string.len(index.songs[currentSong].author) -10
+                    playingNameScroll = 0
+                    playingAuthorScroll = 0
+                end
             else
                 selection = scroll + y -2
             end
