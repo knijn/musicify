@@ -543,7 +543,7 @@ local function drawFooter()
  
     term.setCursorPos(1, screenHeight)
  
-    if currentSong == 0 then
+    if currentSong > 0 then
         term.write("Play")
     else
         term.write("Stop")
@@ -615,7 +615,7 @@ local function checkInput()
             if x >= halfScreen - 4 and x <= halfScreen + 3 and y == screenHeight then
                 coroutine.create(musicify.shuffle({1,#index.songs -1}))
             elseif  x >= 0 and x <= 4 and y == screenHeight then
-                if not currentSong == 0 then
+                if currentSong > 0 then
                     tape.stop()
                     currentSong = 0
                 else
