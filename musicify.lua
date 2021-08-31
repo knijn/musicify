@@ -558,7 +558,7 @@ end
  
 local function checkInput()
     while true do
-        local event, key = os.pullEvent()
+        local event, key, x, y = os.pullEvent()
     
         if event == "key" then
             if key == 208 and selection < #index.songs then
@@ -584,14 +584,31 @@ local function checkInput()
                 selectionAuthorScroll = 0
             
             elseif key == 28 then
-                play(index.songs[selection])
-                currentSong = selection
+                if currentSong == selection then
+                    tape.stop()
+                    currentSong = -1
+                else
+                    play(index.songs[selection])
+                    currentSong = selection
 
-                maxPlayingNameScroll = string.len(index.songs[currentSong].name) -13
-                maxPlayingAuthorScroll =  string.len(index.songs[currentSong].author) -10
-                playingNameScroll = 0
-                playingAuthorScroll = 0
+                    maxPlayingNameScroll = string.len(index.songs[currentSong].name) -13
+                    maxPlayingAuthorScroll =  string.len(index.songs[currentSong].author) -10
+                    playingNameScroll = 0
+                    playingAuthorScroll = 0
+                end
             end
+        elseif event == "mouse_scroll" then
+            if selection - scroll <= 1 and scroll > 0 then
+                scroll = scroll + key
+            end
+    
+            selection = selection + key
+            maxSelectionNameScroll = string.len(index.songs[selection].name) -13
+            maxSelectionAuthorScroll = string.len(index.songs[selection].author) -10
+            selectionNameScroll = 0
+            selectionAuthorScroll = 0
+        elseif event == "mouse_click" then
+            selection = scroll + y -2
         end
     end
 end
