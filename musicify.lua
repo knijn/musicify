@@ -598,12 +598,12 @@ local function checkInput()
                 end
             end
         elseif event == "mouse_scroll" then
-            if selection - scroll <= 1 and scroll > 0 then
-                scroll = scroll + 1
+            if selection - scroll >= screenHeight -3 then
+                scroll = scroll +1
             end
 
-            if selection - scroll >= screenHeight -3 then
-                scroll = scroll - 1
+            if selection - scroll <= 1 and scroll > 0 then
+                scroll = scroll -1
             end
     
             selection = selection + key
@@ -613,17 +613,17 @@ local function checkInput()
             selectionAuthorScroll = 0
         elseif event == "mouse_click" then
             if x >= halfScreen - 4 and x <= halfScreen + 3 and y == screenHeight then
-                musicify.shuffle({1,70})
+                coroutine.create(musicify.shuffle({1,#index.songs -1}))
             elseif  x >= 0 and x <= 4 and y == screenHeight then
-                if currentSong ~= 0 then
+                if not currentSong == 0 then
                     tape.stop()
                     currentSong = 0
                 else
                     play(index.songs[selection])
                     currentSong = selection
 
-                    maxPlayingNameScroll = string.len(index.songs[currentSong].name) -13
-                    maxPlayingAuthorScroll =  string.len(index.songs[currentSong].author) -10
+                    maxPlayingNameScroll = string.len(index.songs[currentSong].name) -12
+                    maxPlayingAuthorScroll =  string.len(index.songs[currentSong].author) -9
                     playingNameScroll = 0
                     playingAuthorScroll = 0
                 end
