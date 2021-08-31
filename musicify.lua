@@ -612,8 +612,8 @@ local function checkInput()
             selectionNameScroll = 0
             selectionAuthorScroll = 0
         elseif event == "mouse_click" then
-            if x <= halfScreen - 4 and x > halfScreen - 7 and y == screenHeight then
-                musicify.shuffle()
+            if x <= halfScreen - 4 and x > halfScreen + 3 and y == screenHeight then
+                musicify.shuffle({1,70})
             else
                 selection = scroll + y -2
             end
