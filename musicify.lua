@@ -546,7 +546,7 @@ local function drawFooter()
     if currentSong == 0 then
         term.write("Play")
     else
-         term.write("Stop")
+        term.write("Stop")
     end
  
     term.setCursorPos(halfScreen - 4, screenHeight)
@@ -612,7 +612,11 @@ local function checkInput()
             selectionNameScroll = 0
             selectionAuthorScroll = 0
         elseif event == "mouse_click" then
-            selection = scroll + y -2
+            if x <= halfScreen - 4 && x > halfScreen - 7 and y == screenHeight then
+                musicify.shuffle()
+            else
+                selection = scroll + y -2
+            end
         end
     end
 end
