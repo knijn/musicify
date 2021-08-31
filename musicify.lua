@@ -601,6 +601,10 @@ local function checkInput()
             if selection - scroll <= 1 and scroll > 0 then
                 scroll = scroll + key
             end
+
+            if selection - scroll >= screenHeight -3 then
+                scroll = scroll + key
+            end
     
             selection = selection + key
             maxSelectionNameScroll = string.len(index.songs[selection].name) -13
