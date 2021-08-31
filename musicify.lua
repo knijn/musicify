@@ -543,7 +543,7 @@ local function drawFooter()
  
     term.setCursorPos(1, screenHeight)
  
-    if currentSong > 0 then
+    if currentSong == 0 then
         term.write("Play")
     else
         term.write("Stop")
