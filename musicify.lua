@@ -586,7 +586,7 @@ local function checkInput()
             elseif key == 28 then
                 if currentSong == selection then
                     tape.stop()
-                    currentSong = -1
+                    currentSong = 0
                 else
                     play(index.songs[selection])
                     currentSong = selection
@@ -599,11 +599,11 @@ local function checkInput()
             end
         elseif event == "mouse_scroll" then
             if selection - scroll <= 1 and scroll > 0 then
-                scroll = scroll + key
+                scroll = scroll + 1
             end
 
             if selection - scroll >= screenHeight -3 then
-                scroll = scroll + key
+                scroll = scroll - 1
             end
     
             selection = selection + key
@@ -615,9 +615,9 @@ local function checkInput()
             if x >= halfScreen - 4 and x <= halfScreen + 3 and y == screenHeight then
                 musicify.shuffle({1,70})
             elseif  x >= 0 and x <= 4 and y == screenHeight then
-                if currentSong == selection then
+                if currentSong ~= 0 then
                     tape.stop()
-                    currentSong = -1
+                    currentSong = 0
                 else
                     play(index.songs[selection])
                     currentSong = selection
