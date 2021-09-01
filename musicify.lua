@@ -201,6 +201,13 @@ local function play(songID)
     tape.write(h.readAll()) -- that's it
     h.close()
 
+    currentSong = songID
+
+    maxPlayingNameScroll = string.len(index.songs[currentSong].name) -12
+    maxPlayingAuthorScroll =  string.len(index.songs[currentSong].author) -9
+    playingNameScroll = 0
+    playingAuthorScroll = 0
+
     tape.seek(-tape.getSize()) -- back to start again
     tape.setSpeed(songID.speed)
     while tape.getState() ~= "STOPPED" do
@@ -543,7 +550,7 @@ local function drawFooter()
  
     term.setCursorPos(1, screenHeight)
  
-    if currentSong == 0 then
+    if currentSong == selection then
         term.write("Play")
     else
         term.write("Stop")
@@ -589,12 +596,6 @@ local function checkInput()
                     currentSong = 0
                 else
                     play(index.songs[selection])
-                    currentSong = selection
-
-                    maxPlayingNameScroll = string.len(index.songs[currentSong].name) -12
-                    maxPlayingAuthorScroll =  string.len(index.songs[currentSong].author) -9
-                    playingNameScroll = 0
-                    playingAuthorScroll = 0
                 end
             end
         elseif event == "mouse_scroll" then
@@ -615,17 +616,11 @@ local function checkInput()
             if x >= halfScreen - 4 and x <= halfScreen + 3 and y == screenHeight then
                 coroutine.create(musicify.shuffle({1,#index.songs -1}))
             elseif  x >= 0 and x <= 4 and y == screenHeight then
-                if currentSong > 0 then
+                if currentSong == selection then
                     tape.stop()
                     currentSong = 0
                 else
                     play(index.songs[selection])
-                    currentSong = selection
-
-                    maxPlayingNameScroll = string.len(index.songs[currentSong].name) -12
-                    maxPlayingAuthorScroll =  string.len(index.songs[currentSong].author) -9
-                    playingNameScroll = 0
-                    playingAuthorScroll = 0
                 end
             else
                 selection = scroll + y -2
