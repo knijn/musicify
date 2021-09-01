@@ -607,12 +607,15 @@ local function checkInput()
             if selection - scroll <= 1 and scroll > 0 then
                 scroll = scroll -1
             end
-    
-            selection = selection + key
-            maxSelectionNameScroll = string.len(index.songs[selection].name) -12
-            maxSelectionAuthorScroll = string.len(index.songs[selection].author) -9
-            selectionNameScroll = 0
-            selectionAuthorScroll = 0
+            
+            if selection + key <= #index.songs and selection + key > 0 then
+                selection = selection + key
+                maxSelectionNameScroll = string.len(index.songs[selection].name) -12
+                maxSelectionAuthorScroll = string.len(index.songs[selection].author) -9
+                selectionNameScroll = 0
+                selectionAuthorScroll = 0
+            end
+            
         elseif event == "mouse_click" then
             if x >= halfScreen - 4 and x <= halfScreen + 3 and y == screenHeight then
                 coroutine.create(musicify.shuffle({1,#index.songs -1}))
