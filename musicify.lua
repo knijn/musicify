@@ -190,7 +190,8 @@ local function wipe()
     tape.seek(-90000)
 end
 
-local function play(songID)
+local function play(index)
+    local SongID = index.songs[index]
     checkmissing(songID)
     print("Playing " .. getSongID(songID.name) .. " | " .. songID.author .. " - " .. songID.name)
     wipe()
@@ -201,7 +202,7 @@ local function play(songID)
     tape.write(h.readAll()) -- that's it
     h.close()
 
-    currentSong = songID
+    currentSong = index.songs[]
 
     maxPlayingNameScroll = string.len(index.songs[currentSong].name) -12
     maxPlayingAuthorScroll =  string.len(index.songs[currentSong].author) -9
@@ -322,7 +323,7 @@ musicify.shuffle = function (arguments)
     while true do
         print("Currently in shuffle mode, press <Q> to exit. Use <Enter> to skip songs")
         local ranNum = math.random(from, to)
-        play(index.songs[ranNum])
+        play(ranNum)
 
         local function songLengthWait() -- Wait till the end of the song
             sleep(index.songs[ranNum].time)
@@ -384,7 +385,7 @@ musicify.play = function (arguments)
         error("You need to have a tape in the tape drive",0)
         return
     end
-    play(index.songs[tonumber(arguments[1])])
+    play(tonumber(arguments[1]))
     tape.play()
 end
 
@@ -410,8 +411,8 @@ musicify.loop = function (arguments)
         return
     end
     while true do
-    play(index.songs[tonumber(arguments[1])])
-    sleep(index.songs[tonumber(arguments[1])].time)
+    play(tonumber(arguments[1]))
+    sleep(tonumber(arguments[1]).time)
     end
 end
 
@@ -433,7 +434,7 @@ musicify.playlist = function (arguments)
         debug("i: " .. i)
         debug("SongID " .. songID)
         print("Currently in playlist mode, press <Q> to exit. Use <Enter> to skip songs")
-        play(index.songs[tonumber(songID)])
+        play(tonumber(songID))
 
         local function songLengthWait() -- Wait till the end of the song
             sleep(index.songs[tonumber(songID)].time)
@@ -551,9 +552,9 @@ local function drawFooter()
     term.setCursorPos(1, screenHeight)
  
     if currentSong == selection then
-        term.write("Play")
-    else
         term.write("Stop")
+    else
+        term.write("Play")
     end
  
     term.setCursorPos(halfScreen - 4, screenHeight)
@@ -595,7 +596,7 @@ local function checkInput()
                     tape.stop()
                     currentSong = 0
                 else
-                    play(index.songs[selection])
+                    play(selection)
                 end
             end
         elseif event == "mouse_scroll" then
@@ -620,7 +621,7 @@ local function checkInput()
                     tape.stop()
                     currentSong = 0
                 else
-                    play(index.songs[selection])
+                    play(selection)
                 end
             else
                 selection = scroll + y -2
