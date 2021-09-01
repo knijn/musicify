@@ -573,11 +573,13 @@ local function select(id)
 end
 
 local function selectUp()
-    if selection - scroll <= 1 and scroll > 0 then
-        scroll = scroll -1
-    end
+    if selection > 1 then
+        if selection - scroll <= 1 and scroll > 0 then
+            scroll = scroll -1
+        end
 
-    select(selection -1)
+        select(selection -1)
+    end
 end
 
 local function selectDown()
@@ -596,7 +598,7 @@ local function checkInput()
             if key == 208 and selection < #index.songs then
                 selectDown()
             
-            elseif key == 200 and selection > 1 then
+            elseif key == 200 then
                 selectUp()
             
             elseif key == 28 then
@@ -609,9 +611,9 @@ local function checkInput()
             end
         elseif event == "mouse_scroll" then
             if key > 0 then
-                selectUp()
-            else
                 selectDown()
+            else
+                selectUp()
             end
 
         elseif event == "mouse_click" then
