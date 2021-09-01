@@ -190,8 +190,8 @@ local function wipe()
     tape.seek(-90000)
 end
 
-local function play(index)
-    local SongID = index.songs[index]
+local function play(id)
+    local SongID = index.songs[id]
     checkmissing(songID)
     print("Playing " .. getSongID(songID.name) .. " | " .. songID.author .. " - " .. songID.name)
     wipe()
@@ -202,7 +202,7 @@ local function play(index)
     tape.write(h.readAll()) -- that's it
     h.close()
 
-    currentSong = index.songs[]
+    currentSong = id
 
     maxPlayingNameScroll = string.len(index.songs[currentSong].name) -12
     maxPlayingAuthorScroll =  string.len(index.songs[currentSong].author) -9
