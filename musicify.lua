@@ -191,7 +191,7 @@ local function wipe()
 end
 
 local function play(id)
-    local SongID = index.songs[id]
+    local songID = index.songs[id]
     checkmissing(songID)
     print("Playing " .. getSongID(songID.name) .. " | " .. songID.author .. " - " .. songID.name)
     wipe()
