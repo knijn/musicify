@@ -583,11 +583,13 @@ local function selectUp()
 end
 
 local function selectDown()
-    if selection - scroll >= screenHeight -3 then
-        scroll = scroll +1
-    end
+    if selection < #index.songs then
+        if selection - scroll >= screenHeight -3 then
+            scroll = scroll +1
+        end
 
-    select(selection +1)
+        select(selection +1)
+    end
 end
  
 local function checkInput()
@@ -595,7 +597,7 @@ local function checkInput()
         local event, key, x, y = os.pullEvent()
     
         if event == "key" then
-            if key == 208 and selection < #index.songs then
+            if key == 208 then
                 selectDown()
             
             elseif key == 200 then
