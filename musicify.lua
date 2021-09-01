@@ -563,6 +563,30 @@ local function drawFooter()
 end
 
 -- GUI Logic
+
+local function select(id)
+    selection = id
+    maxSelectionNameScroll = string.len(index.songs[id].name) -12
+    maxSelectionAuthorScroll = string.len(index.songs[id].author) -9
+    selectionNameScroll = 0
+    selectionAuthorScroll = 0
+end
+
+local function selectUp()
+    if selection - scroll <= 1 and scroll > 0 then
+        scroll = scroll -1
+    end
+
+    select(selection -1)
+end
+
+local function selectDown()
+    if selection - scroll >= screenHeight -3 then
+        scroll = scroll +1
+    end
+
+    select(selection +1)
+end
  
 local function checkInput()
     while true do
@@ -570,26 +594,10 @@ local function checkInput()
     
         if event == "key" then
             if key == 208 and selection < #index.songs then
-                if selection - scroll >= screenHeight -3 then
-                    scroll = scroll +1
-                end
-            
-                selection = selection +1
-                maxSelectionNameScroll = string.len(index.songs[selection].name) -13 
-                maxSelectionAuthorScroll = string.len(index.songs[selection].author) -10
-                selectionNameScroll = 0
-                selectionAuthorScroll = 0
+                selectDown()
             
             elseif key == 200 and selection > 1 then
-                if selection - scroll <= 1 and scroll > 0 then
-                    scroll = scroll -1
-                end
-        
-                selection = selection -1
-                maxSelectionNameScroll = string.len(index.songs[selection].name) -13
-                maxSelectionAuthorScroll = string.len(index.songs[selection].author) -10
-                selectionNameScroll = 0
-                selectionAuthorScroll = 0
+                selectUp()
             
             elseif key == 28 then
                 if currentSong == selection then
@@ -600,38 +608,28 @@ local function checkInput()
                 end
             end
         elseif event == "mouse_scroll" then
-            if selection - scroll >= screenHeight -3 then
-                scroll = scroll +1
+            if key > 0 then
+                selectUp()
+            else
+                selectDown()
             end
 
-            if selection - scroll <= 1 and scroll > 0 then
-                scroll = scroll -1
-            end
-            
-            if selection + key <= #index.songs and selection + key > 0 then
-                selection = selection + key
-                maxSelectionNameScroll = string.len(index.songs[selection].name) -12
-                maxSelectionAuthorScroll = string.len(index.songs[selection].author) -9
-                selectionNameScroll = 0
-                selectionAuthorScroll = 0
-            end
-            
         elseif event == "mouse_click" then
-            if x >= halfScreen - 4 and x <= halfScreen + 3 and y == screenHeight then
-                coroutine.create(musicify.shuffle({1,#index.songs -1}))
-            elseif  x >= 0 and x <= 4 and y == screenHeight then
-                if currentSong == selection then
-                    tape.stop()
-                    currentSong = 0
-                else
-                    play(selection)
+            if y == screenHeight then
+                if x >= halfScreen - 4 and x <= halfScreen + 3 then
+                    coroutine.create(musicify.shuffle({1,#index.songs -1}))
+                elseif  x >= 0 and x <= 4 and y == screenHeight then
+                    if currentSong == selection then
+                        tape.stop()
+                        currentSong = 0
+                    else
+                        play(selection)
+                    end
                 end
             else
-                selection = scroll + y -2
-                maxSelectionNameScroll = string.len(index.songs[selection].name) -12
-                maxSelectionAuthorScroll = string.len(index.songs[selection].author) -9
-                selectionNameScroll = 0
-                selectionAuthorScroll = 0
+                if y > 2 then
+                    select(scroll + y -2)
+                end
             end
         end
     end
