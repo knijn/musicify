@@ -7,6 +7,8 @@ local function debug(str) -- Debug function to display things when verbose mode 
     end
 end
 
+
+
 if fs.open("./musicify_config.json","r") then
   debug("Config found")
   config = textutils.unserialiseJSON(fs.open("./musicify_config.json", "r").readAll())
@@ -36,6 +38,10 @@ local musicify = {}
 local tape = peripheral.find("tape_drive")
 local devMode = 0
 local i = 1
+local serverChannel = 2561
+local serverMode = false
+local modem = peripheral.find("modem")
+
 -- Parse -dev argument switch, provided by Luca_S
 while i <= #args do
     if args[i] == "-dev" then
@@ -101,6 +107,9 @@ end
 
 local function play(songID)
     checkmissing(songID)
+    if modem then
+      modem.transmit(serverChannel,serverChannel,songID)
+    end
     print("Playing " .. getSongID(songID.name) .. " | " .. songID.author .. " - " .. songID.name)
     wipe()
     tape.stop()
@@ -241,6 +250,7 @@ musicify.shuffle = function (arguments)
     end
 end
 
+
 musicify.volume = function (arguments)
     if not arguments[1] or not tonumber(arguments[1]) or tonumber(arguments[1])>100 or tonumber(arguments[1]) < 1 then
         error("Please specify a valid volume level between 0-100",0)
@@ -349,6 +359,30 @@ musicify.playlist = function (arguments)
 
             parallel.waitForAny(songLengthWait, keyboardWait)          -- Combine the two above functions
     end
+end
+
+musicify.server = function(args)
+  if not peripheral.find("modem") then
+    error("You should have a modem installed")
+  end
+  serverMode = true
+  modem = peripheral.find("modem")
+  modem.open(serverChannel)
+  local function listenLoop()
+    local event, side, ch, rch, msg, dist = os.pullEvent("modem_message")
+    if not type(msg) == "table" then
+      return
+    end
+    if msg.command and msg.args then
+      if musicify[msg.command] then
+        print(msg.command)
+        musicify[msg.command](msg.args)
+      end
+    end
+   end
+  while true do
+    parallel.waitForAny(listenLoop)
+  end
 end
 
 command = table.remove(args, 1)
