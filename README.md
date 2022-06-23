@@ -1,13 +1,13 @@
 ![License badge](https://img.shields.io/github/license/RubenHetKonijn/musicify)
 # Musicify
-Musicify is a command line utility for ComputerCraft:Tweaked to stream* songs in game. There is a Python port in the works but this is a very much work in progress 
+Musicify is a command line utility for ComputerCraft:Tweaked to stream* songs in game.
 
 ## Install
 To install, run
 ```shell
 wget run https://raw.githubusercontent.com/knijn/musicify/main/install.lua
 ```
-It should only take 6kB of data on your ComputerCraft computer.
+It should only take 13kB of data on your ComputerCraft computer.
 
 
 
@@ -21,10 +21,10 @@ If you are confused about how to setup Musicify, please [check the wiki page](ht
 
 ## Development
 The program also should work as an api, this is not tested though.
-If you want to support the program, please make a pull request. It helps out a ton
+If you want to support the program, please make a pull request. It helps out a ton!
 
 If you want to run the development version of Musicify, run
 
 ```shell
-wget run https://raw.githubusercontent.com/RubenHetKonijn/musicify/dev/install.lua
+wget run https://raw.githubusercontent.com/RubenHetKonijn/musicify/mian/git_install.lua
 ```
