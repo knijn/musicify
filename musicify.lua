@@ -1,5 +1,5 @@
 local function debug(str) -- Debug function to display things when verbose mode is on
-    if devMode == 1 then
+    if devMode then
         oldTextColor = term.getTextColor()
         term.setTextColor(colors.green)
         print("DEBUG: " .. tostring(str))
@@ -16,27 +16,18 @@ end
 
 if not config then config = {} end -- Hotfix to make Musicify work when no config is available
 
-if not config.devMode then
-  devMode = 0
-elseif config.devMode == true then
-  devMode = 1
-end
 
+settings.load()
+local devMode = settings.get("musicify.devMode",false)
+local repo = settings.get("musicify.repo","https://raw.githubusercontent.com/RubenHetKonijn/computronics-songs/main/index.json")
+local autoUpdates = settings.get("musicify.autoUpdates",true)
+local modemBroadcast = settings.get("musicify.broadcast", true)
 
-if not config.repo then
-  config.repo = "https://raw.githubusercontent.com/RubenHetKonijn/computronics-songs/main/index.json"
-end
-
-if not config.autoUpdates then
-  config.autoUpdates = true
-end
-
-local indexURL = config.repo .. "?cb=" .. os.epoch("utc")
-local version = 0.9
+local indexURL = repo .. "?cb=" .. os.epoch("utc")
+local version = 1.0
 local args = {...}
 local musicify = {}
 local tape = peripheral.find("tape_drive")
-local devMode = 0
 local i = 1
 local serverChannel = 2561
 local serverMode = false
@@ -45,17 +36,35 @@ local modem = peripheral.find("modem")
 -- Parse -dev argument switch, provided by Luca_S
 while i <= #args do
     if args[i] == "-dev" then
-        devMode = 1
+        devMode = true
         table.remove(args, i)
     else
         i = i + 1
     end
 end
 
+local function migrateConfig()
+  local configHandle = fs.open("musicify_config.json","r")
+  if not configHandle then return end
+  local config = textutils.unserialiseJSON(configHandle.readAll())
+  configHandle.close()
+  settings.load()
+  if config.devMode then
+    settings.set("musicify.devMode",config.devMode)
+  end
+  if config.repo then
+    settings.set("musicify.repo",config.repo)
+  end
+  if config.autoUpdates then
+    settings.set("musicify.autoUpdates",config.autoUpdates)
+  end
+  settings.save()
+end
 
+migrateConfig()
 
 if not tape then -- Check if there is a Tape Drive
-    error("Tapedrive not found, refer to the wiki on how to set up Musicify",0)
+  error("Tapedrive not found, refer to the wiki on how to set up Musicify",0)
 end
 
 local handle = http.get(indexURL)
@@ -107,7 +116,7 @@ end
 
 local function play(songID)
     checkmissing(songID)
-    if modem then
+    if modem and modemBroadcast then
       modem.transmit(serverChannel,serverChannel,songID)
     end
     print("Playing " .. getSongID(songID.name) .. " | " .. songID.author .. " - " .. songID.name)
@@ -128,7 +137,7 @@ local function play(songID)
 end
 
 local function update()
-    if not config.autoUpdates then
+    if not autoUpdates then
       error("It seems like you've disabled autoupdates, we're skipping this update", 0)
     end
     local s = shell.getRunningProgram()
@@ -167,9 +176,11 @@ musicify
 ]])
 end
 
+
+
 musicify.update = function (arguments)
     print("Updating Musicify, please hold on.")
-    config.autoUpdates = true
+    autoUpdates = true -- bypass autoupdate check
     update() -- Calls the update function to re-download the source code from the stable branch
 end
 
@@ -212,8 +223,38 @@ musicify.list = function (arguments)
             return
         end
     end
+    local buffer = ""
+    local songAmount = #index.songs
     for i in pairs(index.songs) do -- Loop through all songs
-        print(i .. " | " .. index.songs[i].author .. " - " .. index.songs[i].name)
+        buffer = buffer .. i .. " | " .. index.songs[i].author .. " - " .. index.songs[i].name .. "\n"
+    end
+    local offset = 0
+    local xSize, ySize = term.getSize()
+    local function keyboardHandler()
+        local event, key, is_held = os.pullEvent("key")
+        if key == keys.q then
+          error("Closed list")
+        elseif key == keys.s then
+          if offset < songAmount - ySize then
+            offset = offset + 1
+          end
+        elseif key == keys.w then
+          if offset > 0 then
+            offset = offset - 1
+          end
+        end
+    end
+    local function draw()
+        term.clear()
+        for i=1,ySize do
+          term.setCursorPos(1,i)
+          i = i + offset
+          term.write(i .. " | " .. index.songs[i].author .. " - " .. index.songs[i].name)
+        end
+        coroutine.yield()
+    end
+    while true do
+      parallel.waitForAny(keyboardHandler,draw)
     end
 end
 
@@ -296,7 +337,7 @@ end
 musicify.info = function (arguments)
 
     print("Latest version: " .. index.latestVersion)
-    if devMode == 1 then
+    if devMode then
         print("DevMode: On")
     else
         print("DevMode: Off")
@@ -361,6 +402,17 @@ musicify.playlist = function (arguments)
     end
 end
 
+musicify.random = function(args)
+  local from = args[1] or 1
+  local to = args[2] or #index.songs
+  if tostring(args[1]) and not tonumber(args[1]) and args[1] then -- Check if selection is valid
+    error("Please specify arguments in a form like `musicify shuffle 1 5`",0)
+    return
+  end
+  local ranNum = math.random(from, to)
+  play(index.songs[ranNum])
+end
+
 musicify.server = function(args)
   if not peripheral.find("modem") then
     error("You should have a modem installed")
@@ -374,6 +426,9 @@ musicify.server = function(args)
       return
     end
     if msg.command and msg.args then
+      if msg.command == "shuffle" then -- make sure the server isn't unresponsive
+        return
+      end
       if musicify[msg.command] then
         print(msg.command)
         musicify[msg.command](msg.args)
