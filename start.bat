@@ -1,0 +1,1 @@
+craftos-pc --id 5834 --mount-rw /=./

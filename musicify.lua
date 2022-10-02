@@ -7,7 +7,10 @@ local function debug(str) -- Debug function to display things when verbose mode 
     end
 end
 
-
+if periphemu then -- probably on CraftOS-PC
+    periphemu.create("back","speaker")
+    config.set("standardsMode",true)
+end
 
 if fs.open("./musicify_config.json","r") then
   debug("Config found")
@@ -22,12 +25,12 @@ local devMode = settings.get("musicify.devMode",false)
 local repo = settings.get("musicify.repo","https://raw.githubusercontent.com/RubenHetKonijn/computronics-songs/main/index.json")
 local autoUpdates = settings.get("musicify.autoUpdates",true)
 local modemBroadcast = settings.get("musicify.broadcast", true)
-
+local dfpwm = require("cc.audio.dfpwm")
 local indexURL = repo .. "?cb=" .. os.epoch("utc")
 local version = 1.0
 local args = {...}
 local musicify = {}
-local tape = peripheral.find("tape_drive")
+local speaker = peripheral.find("speaker")
 local i = 1
 local serverChannel = 2561
 local serverMode = false
@@ -63,8 +66,8 @@ end
 
 migrateConfig()
 
-if not tape then -- Check if there is a Tape Drive
-  error("Tapedrive not found, refer to the wiki on how to set up Musicify",0)
+if not speaker then -- Check if there is a Tape Drive
+  error("Speaker not found, refer to the wiki on how to set up Musicify",0)
 end
 
 local handle = http.get(indexURL)
@@ -100,40 +103,45 @@ local function checkmissing(songID)
 end
 
 
-local function wipe()
-    local k = tape.getSize()
-    tape.stop()
-    tape.seek(-k)
-    tape.stop()
-    tape.seek(-90000)
-    local s = string.rep("\xAA", 8192)
-    for i = 1, k + 8191, 8192 do
-        tape.write(s)
-    end
-    tape.seek(-k)
-    tape.seek(-90000)
-end
-
 local function play(songID)
     checkmissing(songID)
     if modem and modemBroadcast then
       modem.transmit(serverChannel,serverChannel,songID)
     end
     print("Playing " .. getSongID(songID.name) .. " | " .. songID.author .. " - " .. songID.name)
-    wipe()
-    tape.stop()
-    tape.seek(-tape.getSize()) -- go back to the start
-
-    local h = http.get(songID.file, nil, true) -- write in binary mode
-    tape.write(h.readAll()) -- that's it
-    h.close()
-
-    tape.seek(-tape.getSize()) -- back to start again
-    tape.setSpeed(songID.speed)
-    while tape.getState() ~= "STOPPED" do
-      sleep(1)
+    local h = http.get({["url"] = songID.file, ["binary"] = true, ["redirect"] = true}) -- write in binary mode
+    local song = h.readAll()
+    print(#song)
+    --local fsHandle = fs.open("/.musicifytmpfile","w")
+    --fsHandle.write(song)
+    --fsHandle.close()
+    if songID.speed == 2 then
+        -- downsample to 48khz from 96khz
     end
-    tape.play()
+--    local bitlength = 0
+--    local bits = {}
+--    local chunks = {}
+--    for i=1,#song do
+--        local bit = string.sub(song,i)
+--        bitlength = bitlength + 1
+--        if bitlength == 16 * 1024 then
+--            print("loaded chunk into chunks")
+--            table.insert(chunks,bits)
+--            bits = {}
+--            break
+--        end
+--        table.insert(bits,bit)
+--    end
+    local decoder = dfpwm.make_decoder()
+    print(h.read(16 * 1024))
+    for chunk in h.read(16 * 1024) do
+        print(chunk)
+        local buffer = decoder(tostring(chunk))
+        while not speaker.playAudio(buffer) do
+            os.pullEvent("speaker_audio_empty")
+        end
+    end
+    h.close()
 end
 
 local function update()
@@ -326,12 +334,7 @@ musicify.play = function (arguments)
         error("Please provide a valid track ID. Use `list` to see all valid track numbers.",0)
         return
     end
-    if not tape.isReady() then
-        error("You need to have a tape in the tape drive",0)
-        return
-    end
     play(index.songs[tonumber(arguments[1])])
-    tape.play()
 end
 
 musicify.info = function (arguments)
