@@ -133,8 +133,11 @@ local function play(songID)
 --        table.insert(bits,bit)
 --    end
     local decoder = dfpwm.make_decoder()
-    print(h.read(16 * 1024))
-    for chunk in h.read(16 * 1024) do
+    print(h.readLine())
+    sleep(2)
+    for chunkIterator=1,#song / (16*1024)do
+        print("On chunk " .. chunkIterator)
+        local chunk = h.read(16 * 1024) --  + (chunkIterator - 1) * (16 * 1024)
         print(chunk)
         local buffer = decoder(tostring(chunk))
         while not speaker.playAudio(buffer) do
