@@ -22,7 +22,7 @@ if not config then config = {} end -- Hotfix to make Musicify work when no confi
 
 settings.load()
 local devMode = settings.get("musicify.devMode",false)
-local repo = settings.get("musicify.repo","https://raw.githubusercontent.com/RubenHetKonijn/computronics-songs/main/index.json")
+local repo = settings.get("musicify.repo","https://raw.githubusercontent.com/knijn/musicify-songs/main/index.json")
 local autoUpdates = settings.get("musicify.autoUpdates",true)
 local modemBroadcast = settings.get("musicify.broadcast", true)
 local dfpwm = require("cc.audio.dfpwm")
@@ -110,38 +110,23 @@ local function play(songID)
     end
     print("Playing " .. getSongID(songID.name) .. " | " .. songID.author .. " - " .. songID.name)
     local h = http.get({["url"] = songID.file, ["binary"] = true, ["redirect"] = true}) -- write in binary mode
-    local song = h.readAll()
-    print(#song)
-    --local fsHandle = fs.open("/.musicifytmpfile","w")
-    --fsHandle.write(song)
-    --fsHandle.close()
-    if songID.speed == 2 then
-        -- downsample to 48khz from 96khz
-    end
---    local bitlength = 0
---    local bits = {}
---    local chunks = {}
---    for i=1,#song do
---        local bit = string.sub(song,i)
---        bitlength = bitlength + 1
---        if bitlength == 16 * 1024 then
---            print("loaded chunk into chunks")
---            table.insert(chunks,bits)
---            bits = {}
---            break
---        end
---        table.insert(bits,bit)
---    end
+    local even = true
     local decoder = dfpwm.make_decoder()
-    print(h.readLine())
-    sleep(2)
-    for chunkIterator=1,#song / (16*1024)do
-        print("On chunk " .. chunkIterator)
-        local chunk = h.read(16 * 1024) --  + (chunkIterator - 1) * (16 * 1024)
+    while true do
+        local chunk = h.read(16 * 1024)
+        if not chunk then break end
         print(chunk)
         local buffer = decoder(tostring(chunk))
+        if songID.speed == 2 then
+            error("Whoops!! You're trying to play unsupported audio")
+        end
         while not speaker.playAudio(buffer) do
             os.pullEvent("speaker_audio_empty")
+        end
+        if even then
+            even = false
+        else
+            even = true
         end
     end
     h.close()
