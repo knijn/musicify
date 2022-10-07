@@ -115,7 +115,7 @@ local function play(songID)
     while true do
         local chunk = h.read(16 * 1024)
         if not chunk then break end
-        print(chunk)
+        --print(chunk)
         local buffer = decoder(tostring(chunk))
         if songID.speed == 2 then
             error("Whoops!! You're trying to play unsupported audio")
