@@ -1,4 +1,5 @@
 ![License badge](https://img.shields.io/github/license/RubenHetKonijn/musicify)
+[![Mentioned in Awesome ComputerCraft](https://awesome.re/mentioned-badge.svg)](https://github.com/tomodachi94/awesome-computercraft)
 # Musicify
 Musicify is a command line utility for ComputerCraft:Tweaked to stream* songs in game.
 
