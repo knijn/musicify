@@ -70,7 +70,10 @@ if not speaker then -- Check if there is a Tape Drive
   error("Speaker not found, refer to the wiki on how to set up Musicify",0)
 end
 
-local handle = http.get(indexURL)
+local handle , msg = http.get(indexURL)
+if not handle then
+    error(msg)
+end
 local indexJSON = handle.readAll()
 handle.close()
 local index = textutils.unserialiseJSON(indexJSON)
