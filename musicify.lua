@@ -66,7 +66,7 @@ end
 
 migrateConfig()
 
-if not speaker then -- Check if there is a Tape Drive
+if not speaker then -- Check if there is a speaker
   error("Speaker not found, refer to the wiki on how to set up Musicify",0)
 end
 
