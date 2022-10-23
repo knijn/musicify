@@ -100,8 +100,8 @@ for i in pairs(index.songs) do
 end
 
 local function checkmissing(songID)
-  --if getSongID(songID.name) == nil or getSongID(songID.author) == nil or getSongID(songID.type) == nil or getSongID(songID.speed) == nil or getSongID(songID.file) == nil or getSongID(songID.time) == nil then
-  --  error("There seems to be an issue in the song we tried to access, please try again later and let the devs know.",0)
+  --if getSongID(songID).name == nil or getSongID(songID).author == nil or getSongID(songID).type == nil or getSongID(songID).speed == nil or getSongID(songID).file == nil or getSongID(songID).time == nil then
+  --  error("There seems to be an issue in the song we tried to access, please try again later and make an issue on the github.",0)
   --end
 end
 
@@ -169,7 +169,7 @@ musicify
     play <id>  -- Plays the specified song by it's ID
     shuffle [from] [to] -- Starts shuffle mode in the specified range
     update     -- Updates musicify
-
+    loop <id>  -- Loop on a specific song
 ]])
 end
 
