@@ -183,11 +183,6 @@ musicify.update = function (arguments)
     update() -- Calls the update function to re-download the source code from the stable branch
 end
 
-musicify.stop = function (arguments)
-    print("Stopping.")
-    tape.stop()
-end
-
 local getArtistList = function()
     local artistList = {}
     for i,o in pairs(index.songs) do
@@ -290,14 +285,6 @@ musicify.shuffle = function (arguments)
     end
 end
 
-
-musicify.volume = function (arguments)
-    if not arguments[1] or not tonumber(arguments[1]) or tonumber(arguments[1])>100 or tonumber(arguments[1]) < 1 then
-        error("Please specify a valid volume level between 0-100",0)
-        return
-    end
-    tape.setVolume(arguments[1] / 100)
-end
 
 musicify.play = function (arguments)
     local artists = getArtistList()
