@@ -168,8 +168,6 @@ musicify
     list       -- Displays a list of song you can play
     play <id>  -- Plays the specified song by it's ID
     shuffle [from] [to] -- Starts shuffle mode in the specified range
-    stop       -- Stops playback
-    volume [0-100] -- Changes the vulume
     update     -- Updates musicify
 
 ]])
