@@ -132,6 +132,52 @@ if version < index.latestVersion then
     update()
 end
 
+local YouCubeAPI = {}
+
+function YouCubeAPI.new(websocket)
+    return setmetatable({
+        websocket = websocket,
+    }, { __index = YouCubeAPI })
+end
+
+local servers = {
+    "ws://localhost:5000",
+    "wss://youcube.onrender.com"
+}
+
+function YouCubeAPI:detect_bestest_server()
+    for i, server in pairs(servers) do
+        local websocket, websocket_error = http.websocket(server)
+
+        if websocket ~= false then
+            term.write("Using the YouCube server: ")
+            term.setTextColor(colors.blue)
+            print(server)
+            term.setTextColor(colors.white)
+            self.websocket = websocket
+            break
+        elseif i == #servers then
+            error(websocket_error)
+        end
+
+    end
+end
+
+function YouCubeAPI:get_chunk(chunkindex, id)
+    self.websocket.send(textutils.serialiseJSON({
+        ["action"] = "get_chunk",
+        ["chunkindex"] = chunkindex,
+        ["id"] = id
+    }))
+end
+
+function YouCubeAPI:request_media(url)
+    self.websocket.send(textutils.serialiseJSON({
+        ["action"] = "request_media",
+        ["url"] = url
+    }))
+end
+
 musicify.help = function (arguments)
     print([[
 Usage: <action> [arguments]
@@ -146,7 +192,52 @@ musicify
 ]])
 end
 
+musicify.youcube = function (arguments)
+    local youcubeapi = YouCubeAPI.new()
+    youcubeapi:detect_bestest_server()
 
+    local dfpwm = require("cc.audio.dfpwm")
+    local decoder = dfpwm.make_decoder()
+    
+    
+    local url = arguments[1]
+    print("Requesting media ...")
+    youcubeapi:request_media(url)
+
+    local data = youcubeapi.websocket.receive()
+    data = textutils.unserialiseJSON(data)
+
+    if data.action == "error" then
+        error(data.message)
+    end
+
+    local id = data.id
+
+    local chunkindex = 0
+
+    youcubeapi:get_chunk(chunkindex, id)
+        while true do
+            local chunk = youcubeapi.websocket.receive()
+
+            if chunk == "Done playing" then
+                print()
+                youcubeapi.websocket.close()
+                return
+            end
+
+            local buffer = decoder(chunk)
+
+            while not speaker.playAudio(buffer) do
+                os.pullEvent("speaker_audio_empty")
+            end
+
+            chunkindex = chunkindex + 1
+
+
+            youcubeapi:get_chunk(chunkindex, id)
+
+    end
+end
 
 musicify.update = function (arguments)
     print("Updating Musicify, please hold on.")
