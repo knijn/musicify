@@ -16,7 +16,7 @@ if scKey then
 else
   http.request(apiURL) -- when not on switchcraft, use no authentication
 end
-print("Made request")
+print("Made request to " .. apiURL)
 
 while true do
   event, url, handle = os.pullEvent()
