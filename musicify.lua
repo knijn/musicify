@@ -12,13 +12,7 @@ if periphemu then -- probably on CraftOS-PC
     config.set("standardsMode",true)
 end
 
-if fs.open("./musicify_config.json","r") then
-  debug("Config found")
-  config = textutils.unserialiseJSON(fs.open("./musicify_config.json", "r").readAll())
-end
-
 if not config then config = {} end -- Hotfix to make Musicify work when no config is available
-
 
 settings.load()
 local devMode = settings.get("musicify.devMode",false)
@@ -45,27 +39,6 @@ while i <= #args do
         i = i + 1
     end
 end
-
-local function migrateConfig()
-  local configHandle = fs.open("musicify_config.json","r")
-  if not configHandle then return end
-  local config = textutils.unserialiseJSON(configHandle.readAll())
-  configHandle.close()
-  settings.load()
-  if config.devMode then
-    settings.set("musicify.devMode",config.devMode)
-  end
-  if config.repo then
-    settings.set("musicify.repo",config.repo)
-  end
-  if config.autoUpdates then
-    settings.set("musicify.autoUpdates",config.autoUpdates)
-  end
-  settings.save()
-end
-
-migrateConfig()
-
 if not speaker then -- Check if there is a speaker
   error("Speaker not found, refer to the wiki on how to set up Musicify",0)
 end
