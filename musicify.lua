@@ -12,13 +12,7 @@ if periphemu then -- probably on CraftOS-PC
     config.set("standardsMode",true)
 end
 
-if fs.open("./musicify_config.json","r") then
-  debug("Config found")
-  config = textutils.unserialiseJSON(fs.open("./musicify_config.json", "r").readAll())
-end
-
 if not config then config = {} end -- Hotfix to make Musicify work when no config is available
-
 
 settings.load()
 local devMode = settings.get("musicify.devMode",false)
@@ -27,7 +21,7 @@ local autoUpdates = settings.get("musicify.autoUpdates",true)
 local modemBroadcast = settings.get("musicify.broadcast", true)
 local dfpwm = require("cc.audio.dfpwm")
 local indexURL = repo .. "?cb=" .. os.epoch("utc")
-local version = 2.1
+local version = 2.2
 local args = {...}
 local musicify = {}
 local speaker = peripheral.find("speaker")
@@ -35,6 +29,8 @@ local i = 1
 local serverChannel = 2561
 local serverMode = false
 local modem = peripheral.find("modem")
+local v = require("semver") or require("/libs/semver")
+local YouCubeAPI = require("/libs/youcube.lua")
 
 -- Parse -dev argument switch, provided by Luca_S
 while i <= #args do
@@ -45,27 +41,6 @@ while i <= #args do
         i = i + 1
     end
 end
-
-local function migrateConfig()
-  local configHandle = fs.open("musicify_config.json","r")
-  if not configHandle then return end
-  local config = textutils.unserialiseJSON(configHandle.readAll())
-  configHandle.close()
-  settings.load()
-  if config.devMode then
-    settings.set("musicify.devMode",config.devMode)
-  end
-  if config.repo then
-    settings.set("musicify.repo",config.repo)
-  end
-  if config.autoUpdates then
-    settings.set("musicify.autoUpdates",config.autoUpdates)
-  end
-  settings.save()
-end
-
-migrateConfig()
-
 if not speaker then -- Check if there is a speaker
   error("Speaker not found, refer to the wiki on how to set up Musicify",0)
 end
@@ -112,6 +87,7 @@ local function play(songID)
       modem.transmit(serverChannel,serverChannel,songID)
     end
     print("Playing " .. getSongID(songID.name) .. " | " .. songID.author .. " - " .. songID.name)
+    print("Press CTRL+T to stop the song")
     local h = http.get({["url"] = songID.file, ["binary"] = true, ["redirect"] = true}) -- write in binary mode
     local even = true
     local decoder = dfpwm.make_decoder()
@@ -140,24 +116,28 @@ local function update()
       error("It seems like you've disabled autoupdates, we're skipping this update", 0)
     end
     local s = shell.getRunningProgram()
-    handle = http.get("https://raw.githubusercontent.com/RubenHetKonijn/musicify/main/musicify.lua")
+    handle = http.get("https://raw.githubusercontent.com/RubenHetKonijn/musicify/main/update.lua")
     if not handle then
         error("Could not download new version, Please update manually.",0)
     else
         data = handle.readAll()
-        local f = fs.open(s, "w")
+        local f = fs.open(".musicify_updater", "w")
         handle.close()
         f.write(data)
         f.close()
-        shell.run(s)
+        shell.run(".musicify_updater")
+        fs.delete(".musicify_updater")
         return
     end
 end
 
-if version < index.latestVersion then
+if v(version) ^ v(index.latestVersion) then
     error("Client outdated, Updating Musicify.",0) -- Update check
+    -- this has broken so many times it's actually not even funny anymore
     update()
 end
+
+
 
 musicify.help = function (arguments)
     print([[
@@ -173,7 +153,52 @@ musicify
 ]])
 end
 
+musicify.youcube = function (arguments)
+    local youcubeapi = YouCubeAPI.new()
+    youcubeapi:detect_bestest_server()
 
+    local dfpwm = require("cc.audio.dfpwm")
+    local decoder = dfpwm.make_decoder()
+    
+    
+    local url = arguments[1]
+    print("Requesting media ...")
+    youcubeapi:request_media(url)
+
+    local data = youcubeapi.websocket.receive()
+    data = textutils.unserialiseJSON(data)
+
+    if data.action == "error" then
+        error(data.message)
+    end
+
+    local id = data.id
+
+    local chunkindex = 0
+
+    youcubeapi:get_chunk(chunkindex, id)
+        while true do
+            local chunk = youcubeapi.websocket.receive()
+
+            if chunk == "Done playing" then
+                print()
+                youcubeapi.websocket.close()
+                return
+            end
+
+            local buffer = decoder(chunk)
+
+            while not speaker.playAudio(buffer) do
+                os.pullEvent("speaker_audio_empty")
+            end
+
+            chunkindex = chunkindex + 1
+
+
+            youcubeapi:get_chunk(chunkindex, id)
+
+    end
+end
 
 musicify.update = function (arguments)
     print("Updating Musicify, please hold on.")
