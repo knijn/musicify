@@ -30,7 +30,7 @@ local serverChannel = 2561
 local serverMode = false
 local modem = peripheral.find("modem")
 local v = require("/libs/semver")
-local YouCubeAPI = require("/libs/youcube.lua")
+local YouCubeAPI = require("/libs/youcube")
 
 -- Parse -dev argument switch, provided by Luca_S
 while i <= #args do
