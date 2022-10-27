@@ -29,6 +29,8 @@ local i = 1
 local serverChannel = 2561
 local serverMode = false
 local modem = peripheral.find("modem")
+local v = require("semver") or require("/libs/semver")
+local YouCubeAPI = require("/libs/youcube.lua")
 
 -- Parse -dev argument switch, provided by Luca_S
 while i <= #args do
@@ -114,22 +116,24 @@ local function update()
       error("It seems like you've disabled autoupdates, we're skipping this update", 0)
     end
     local s = shell.getRunningProgram()
-    handle = http.get("https://raw.githubusercontent.com/RubenHetKonijn/musicify/main/musicify.lua")
+    handle = http.get("https://raw.githubusercontent.com/RubenHetKonijn/musicify/main/update.lua")
     if not handle then
         error("Could not download new version, Please update manually.",0)
     else
         data = handle.readAll()
-        local f = fs.open(s, "w")
+        local f = fs.open(".musicify_updater", "w")
         handle.close()
         f.write(data)
         f.close()
-        shell.run(s)
+        shell.run(".musicify_updater")
+        fs.delete(".musicify_updater")
         return
     end
 end
 
-if version < index.latestVersion then
+if v(version) ^ v(index.latestVersion) then
     error("Client outdated, Updating Musicify.",0) -- Update check
+    -- this has broken so many times it's actually not even funny anymore
     update()
 end
 
