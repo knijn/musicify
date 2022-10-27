@@ -143,6 +143,7 @@ musicify
     shuffle [from] [to] -- Starts shuffle mode in the specified range
     update     -- Updates musicify
     loop <id>  -- Loop on a specific song
+    youcube <url> -- Play a song from a URL
 ]])
 end
 
