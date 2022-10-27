@@ -137,7 +137,6 @@ if v(version) ^ v(index.latestVersion) then
     update()
 end
 
-local YouCubeAPI = {}
 
 
 musicify.help = function (arguments)
