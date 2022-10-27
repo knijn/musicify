@@ -130,6 +130,9 @@ local function update()
         return
     end
 end
+if version > 2.0 then
+    version = "2.0.0"
+end
 
 if v(version) ^ v(index.latestVersion) then
     error("Client outdated, Updating Musicify.",0) -- Update check
