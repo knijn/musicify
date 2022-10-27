@@ -21,7 +21,7 @@ local autoUpdates = settings.get("musicify.autoUpdates",true)
 local modemBroadcast = settings.get("musicify.broadcast", true)
 local dfpwm = require("cc.audio.dfpwm")
 local indexURL = repo .. "?cb=" .. os.epoch("utc")
-local version = 2.2
+local version = "2.2.1"
 local args = {...}
 local musicify = {}
 local speaker = peripheral.find("speaker")
@@ -52,12 +52,6 @@ end
 local indexJSON = handle.readAll()
 handle.close()
 local index = textutils.unserialiseJSON(indexJSON)
-
-if version > index.latestVersion then -- Check if running version is a development version
-    devVer = true
-else
-    devVer = false
-end
 
 if not index then
     error("The index is malformed. Please make an issue on the github if it already doesn't exist",0)
@@ -129,9 +123,6 @@ local function update()
         fs.delete(".musicify_updater")
         return
     end
-end
-if version > 2.0 then
-    version = "2.0.0"
 end
 
 if v(version) ^ v(index.latestVersion) then
