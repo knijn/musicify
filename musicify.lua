@@ -27,7 +27,7 @@ local autoUpdates = settings.get("musicify.autoUpdates",true)
 local modemBroadcast = settings.get("musicify.broadcast", true)
 local dfpwm = require("cc.audio.dfpwm")
 local indexURL = repo .. "?cb=" .. os.epoch("utc")
-local version = 2.0
+local version = 2.1
 local args = {...}
 local musicify = {}
 local speaker = peripheral.find("speaker")
@@ -66,11 +66,14 @@ end
 
 migrateConfig()
 
-if not speaker then -- Check if there is a Tape Drive
+if not speaker then -- Check if there is a speaker
   error("Speaker not found, refer to the wiki on how to set up Musicify",0)
 end
 
-local handle = http.get(indexURL)
+local handle , msg = http.get(indexURL)
+if not handle then
+    error(msg)
+end
 local indexJSON = handle.readAll()
 handle.close()
 local index = textutils.unserialiseJSON(indexJSON)
@@ -97,8 +100,8 @@ for i in pairs(index.songs) do
 end
 
 local function checkmissing(songID)
-  --if getSongID(songID.name) == nil or getSongID(songID.author) == nil or getSongID(songID.type) == nil or getSongID(songID.speed) == nil or getSongID(songID.file) == nil or getSongID(songID.time) == nil then
-  --  error("There seems to be an issue in the song we tried to access, please try again later and let the devs know.",0)
+  --if getSongID(songID).name == nil or getSongID(songID).author == nil or getSongID(songID).type == nil or getSongID(songID).speed == nil or getSongID(songID).file == nil or getSongID(songID).time == nil then
+  --  error("There seems to be an issue in the song we tried to access, please try again later and make an issue on the github.",0)
   --end
 end
 
@@ -118,7 +121,7 @@ local function play(songID)
         --print(chunk)
         local buffer = decoder(tostring(chunk))
         if songID.speed == 2 then
-            error("Whoops!! You're trying to play unsupported audio")
+            error("Whoops!! You're trying to play unsupported audio, please use 48khz audio in your repository")
         end
         while not speaker.playAudio(buffer) do
             os.pullEvent("speaker_audio_empty")
@@ -165,10 +168,8 @@ musicify
     list       -- Displays a list of song you can play
     play <id>  -- Plays the specified song by it's ID
     shuffle [from] [to] -- Starts shuffle mode in the specified range
-    stop       -- Stops playback
-    volume [0-100] -- Changes the vulume
     update     -- Updates musicify
-
+    loop <id>  -- Loop on a specific song
 ]])
 end
 
@@ -178,11 +179,6 @@ musicify.update = function (arguments)
     print("Updating Musicify, please hold on.")
     autoUpdates = true -- bypass autoupdate check
     update() -- Calls the update function to re-download the source code from the stable branch
-end
-
-musicify.stop = function (arguments)
-    print("Stopping.")
-    tape.stop()
 end
 
 local getArtistList = function()
@@ -287,14 +283,6 @@ musicify.shuffle = function (arguments)
     end
 end
 
-
-musicify.volume = function (arguments)
-    if not arguments[1] or not tonumber(arguments[1]) or tonumber(arguments[1])>100 or tonumber(arguments[1]) < 1 then
-        error("Please specify a valid volume level between 0-100",0)
-        return
-    end
-    tape.setVolume(arguments[1] / 100)
-end
 
 musicify.play = function (arguments)
     local artists = getArtistList()
