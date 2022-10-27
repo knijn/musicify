@@ -121,7 +121,7 @@ local function play(songID)
         --print(chunk)
         local buffer = decoder(tostring(chunk))
         if songID.speed == 2 then
-            error("Whoops!! You're trying to play unsupported audio")
+            error("Whoops!! You're trying to play unsupported audio, please use 48khz audio in your repository")
         end
         while not speaker.playAudio(buffer) do
             os.pullEvent("speaker_audio_empty")
