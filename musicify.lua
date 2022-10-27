@@ -125,7 +125,7 @@ local function update()
     end
 end
 
-if v(version) ^ v(index.latestVersion) then
+if v(version) < v(index.latestVersion) then
     error("Client outdated, Updating Musicify.",0) -- Update check
     -- this has broken so many times it's actually not even funny anymore
     update()
