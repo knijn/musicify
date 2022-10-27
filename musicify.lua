@@ -67,15 +67,7 @@ for i in pairs(index.songs) do
     end
 end
 
-local function checkmissing(songID)
-  --if getSongID(songID).name == nil or getSongID(songID).author == nil or getSongID(songID).type == nil or getSongID(songID).speed == nil or getSongID(songID).file == nil or getSongID(songID).time == nil then
-  --  error("There seems to be an issue in the song we tried to access, please try again later and make an issue on the github.",0)
-  --end
-end
-
-
 local function play(songID)
-    checkmissing(songID)
     if modem and modemBroadcast then
       modem.transmit(serverChannel,serverChannel,songID)
     end
