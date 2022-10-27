@@ -1,12 +1,3 @@
-local function debug(str) -- Debug function to display things when verbose mode is on
-    if devMode then
-        oldTextColor = term.getTextColor()
-        term.setTextColor(colors.green)
-        print("DEBUG: " .. tostring(str))
-        term.setTextColor(oldTextColor)
-    end
-end
-
 if periphemu then -- probably on CraftOS-PC
     periphemu.create("back","speaker")
     config.set("standardsMode",true)
@@ -15,7 +6,6 @@ end
 if not config then config = {} end -- Hotfix to make Musicify work when no config is available
 
 settings.load()
-local devMode = settings.get("musicify.devMode",false)
 local repo = settings.get("musicify.repo","https://raw.githubusercontent.com/knijn/musicify-songs/main/index.json")
 local autoUpdates = settings.get("musicify.autoUpdates",true)
 local modemBroadcast = settings.get("musicify.broadcast", true)
@@ -31,15 +21,6 @@ local modem = peripheral.find("modem")
 local v = require("/libs/semver")
 local YouCubeAPI = require("/libs/youcube")
 
--- Parse -dev argument switch, provided by Luca_S
-while i <= #args do
-    if args[i] == "-dev" then
-        devMode = true
-        table.remove(args, i)
-    else
-        i = i + 1
-    end
-end
 if not speaker then -- Check if there is a speaker
   error("Speaker not found, refer to the wiki on how to set up Musicify",0)
 end
@@ -326,14 +307,12 @@ musicify.play = function (arguments)
     play(index.songs[tonumber(arguments[1])])
 end
 
+
 musicify.info = function (arguments)
 
     print("Latest version: " .. index.latestVersion)
-    if devMode then
-        print("DevMode: On")
-    else
-        print("DevMode: Off")
-    end
+    local devVer = v(version) > v(index.latestVersion)
+
     if devVer == true then
         print("Current version: " .. version .. " (Development Version)")
     else
