@@ -318,6 +318,7 @@ musicify.info = function (arguments)
     else
         print("Current version: " .. version)
     end
+    print("Repository name: " .. index.indexName)
 
 end
 
