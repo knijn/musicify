@@ -150,7 +150,9 @@ end
 musicify.youcube = function (arguments)
     local youcubeapi = YouCubeAPI.new()
     youcubeapi:detect_bestest_server()
-
+    if not arguments or not arguments[1] then
+        error("No URL was provided")
+    end
     local dfpwm = require("cc.audio.dfpwm")
     local decoder = dfpwm.make_decoder()
     
