@@ -21,7 +21,7 @@ local autoUpdates = settings.get("musicify.autoUpdates",true)
 local modemBroadcast = settings.get("musicify.broadcast", true)
 local dfpwm = require("cc.audio.dfpwm")
 local indexURL = repo .. "?cb=" .. os.epoch("utc")
-local version = "2.2.1"
+local version = "2.2.2"
 local args = {...}
 local musicify = {}
 local speaker = peripheral.find("speaker")
@@ -125,7 +125,7 @@ local function update()
     end
 end
 
-if v(version) ^ v(index.latestVersion) then
+if v(version) < v(index.latestVersion) then
     error("Client outdated, Updating Musicify.",0) -- Update check
     -- this has broken so many times it's actually not even funny anymore
     update()
