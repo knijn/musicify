@@ -16,7 +16,7 @@ function YouCubeAPI:detect_bestest_server()
         local websocket, websocket_error = http.websocket(server)
 
         if websocket ~= false then
-            term.write("Using the YouCube server: ")
+            term.write("Using YouCube server ")
             term.setTextColor(colors.blue)
             print(server)
             term.setTextColor(colors.white)

@@ -1,46 +1,24 @@
-local function debug(str) -- Debug function to display things when verbose mode is on
-    if devMode then
-        oldTextColor = term.getTextColor()
-        term.setTextColor(colors.green)
-        print("DEBUG: " .. tostring(str))
-        term.setTextColor(oldTextColor)
-    end
-end
-
 if periphemu then -- probably on CraftOS-PC
     periphemu.create("back","speaker")
     config.set("standardsMode",true)
 end
 
-if not config then config = {} end -- Hotfix to make Musicify work when no config is available
-
 settings.load()
-local devMode = settings.get("musicify.devMode",false)
 local repo = settings.get("musicify.repo","https://raw.githubusercontent.com/knijn/musicify-songs/main/index.json")
 local autoUpdates = settings.get("musicify.autoUpdates",true)
 local modemBroadcast = settings.get("musicify.broadcast", true)
 local dfpwm = require("cc.audio.dfpwm")
 local indexURL = repo .. "?cb=" .. os.epoch("utc")
-local version = "2.2.2"
+local version = "2.3.0"
 local args = {...}
 local musicify = {}
 local speaker = peripheral.find("speaker")
 local i = 1
 local serverChannel = 2561
-local serverMode = false
 local modem = peripheral.find("modem")
 local v = require("/libs/semver")
 local YouCubeAPI = require("/libs/youcube")
 
--- Parse -dev argument switch, provided by Luca_S
-while i <= #args do
-    if args[i] == "-dev" then
-        devMode = true
-        table.remove(args, i)
-    else
-        i = i + 1
-    end
-end
 if not speaker then -- Check if there is a speaker
   error("Speaker not found, refer to the wiki on how to set up Musicify",0)
 end
@@ -68,19 +46,15 @@ for i in pairs(index.songs) do
     end
 end
 
-local function checkmissing(songID)
-  --if getSongID(songID).name == nil or getSongID(songID).author == nil or getSongID(songID).type == nil or getSongID(songID).speed == nil or getSongID(songID).file == nil or getSongID(songID).time == nil then
-  --  error("There seems to be an issue in the song we tried to access, please try again later and make an issue on the github.",0)
-  --end
-end
-
-
 local function play(songID)
-    checkmissing(songID)
     if modem and modemBroadcast then
       modem.transmit(serverChannel,serverChannel,songID)
     end
     print("Playing " .. getSongID(songID.name) .. " | " .. songID.author .. " - " .. songID.name)
+    term.write("Using repository ")
+    term.setTextColor(colors.blue)
+    print(index.indexName)
+    term.setTextColor(colors.white)
     print("Press CTRL+T to stop the song")
     local h = http.get({["url"] = songID.file, ["binary"] = true, ["redirect"] = true}) -- write in binary mode
     local even = true
@@ -144,13 +118,16 @@ musicify
     shuffle [from] [to] -- Starts shuffle mode in the specified range
     update     -- Updates musicify
     loop <id>  -- Loop on a specific song
+    youcube <url> -- Play a song from a URL
 ]])
 end
 
 musicify.youcube = function (arguments)
     local youcubeapi = YouCubeAPI.new()
     youcubeapi:detect_bestest_server()
-
+    if not arguments or not arguments[1] then
+        error("No URL was provided")
+    end
     local dfpwm = require("cc.audio.dfpwm")
     local decoder = dfpwm.make_decoder()
     
@@ -205,7 +182,6 @@ local getArtistList = function()
     for i,o in pairs(index.songs) do
         for i2,o2 in pairs(artistList) do
             if o2 == o then
-                debug("Found Duplicate")
                 return
             end
         end
@@ -277,7 +253,7 @@ musicify.shuffle = function (arguments)
         return
     end
     while true do
-        print("Currently in shuffle mode, press <Q> to exit. Use <Enter> to skip songs")
+        print("Currently in shuffle mode")
         local ranNum = math.random(from, to)
         play(index.songs[ranNum])
 
@@ -332,19 +308,18 @@ musicify.play = function (arguments)
     play(index.songs[tonumber(arguments[1])])
 end
 
+
 musicify.info = function (arguments)
 
     print("Latest version: " .. index.latestVersion)
-    if devMode then
-        print("DevMode: On")
-    else
-        print("DevMode: Off")
-    end
+    local devVer = v(version) > v(index.latestVersion)
+
     if devVer == true then
         print("Current version: " .. version .. " (Development Version)")
     else
         print("Current version: " .. version)
     end
+    print("Repository name: " .. index.indexName)
 
 end
 
@@ -363,19 +338,15 @@ musicify.playlist = function (arguments)
     if not arguments[1] or not tostring(arguments[1]) or not fs.exists(arguments[1]) then
         error("Please specify a correct file")
     end
-    debug("Got file")
     local playlist = fs.open(arguments[1], "r") -- Load playlist file into a variable
     local list = playlist.readAll() -- Also load playlist file into a variable
     playlist.close()
     local toPlay = {}
 
     for word in string.gmatch(list, '([^,]+)') do -- Seperate different song ID's from file
-        debug(word)
         table.insert(toPlay,word)
     end
     for i,songID in pairs(toPlay) do
-        debug("i: " .. i)
-        debug("SongID " .. songID)
         print("Currently in playlist mode, press <Q> to exit. Use <Enter> to skip songs")
         play(index.songs[tonumber(songID)])
 
@@ -441,7 +412,6 @@ end
 command = table.remove(args, 1)
 musicify.index = index
 
-debug("Debug mode is enabled")
 local failedCommand = 0
 
 
@@ -449,6 +419,5 @@ if musicify[command] then
     musicify[command](args)
 else
     print("Please provide a valid command. For usage, use `musicify help`.")
-    debug("Encountered a non-valid command")
 end
 return musicify
