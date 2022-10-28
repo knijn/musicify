@@ -253,7 +253,7 @@ musicify.shuffle = function (arguments)
         return
     end
     while true do
-        print("Currently in shuffle mode, press <Q> to exit. Use <Enter> to skip songs")
+        print("Currently in shuffle mode")
         local ranNum = math.random(from, to)
         play(index.songs[ranNum])
 
