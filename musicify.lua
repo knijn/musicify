@@ -3,8 +3,6 @@ if periphemu then -- probably on CraftOS-PC
     config.set("standardsMode",true)
 end
 
-if not config then config = {} end -- Hotfix to make Musicify work when no config is available
-
 settings.load()
 local repo = settings.get("musicify.repo","https://raw.githubusercontent.com/knijn/musicify-songs/main/index.json")
 local autoUpdates = settings.get("musicify.autoUpdates",true)
@@ -337,7 +335,6 @@ musicify.playlist = function (arguments)
     if not arguments[1] or not tostring(arguments[1]) or not fs.exists(arguments[1]) then
         error("Please specify a correct file")
     end
-    debug("Got file")
     local playlist = fs.open(arguments[1], "r") -- Load playlist file into a variable
     local list = playlist.readAll() -- Also load playlist file into a variable
     playlist.close()
