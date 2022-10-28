@@ -178,7 +178,6 @@ local getArtistList = function()
     for i,o in pairs(index.songs) do
         for i2,o2 in pairs(artistList) do
             if o2 == o then
-                debug("Found Duplicate")
                 return
             end
         end
@@ -341,12 +340,9 @@ musicify.playlist = function (arguments)
     local toPlay = {}
 
     for word in string.gmatch(list, '([^,]+)') do -- Seperate different song ID's from file
-        debug(word)
         table.insert(toPlay,word)
     end
     for i,songID in pairs(toPlay) do
-        debug("i: " .. i)
-        debug("SongID " .. songID)
         print("Currently in playlist mode, press <Q> to exit. Use <Enter> to skip songs")
         play(index.songs[tonumber(songID)])
 
@@ -412,7 +408,6 @@ end
 command = table.remove(args, 1)
 musicify.index = index
 
-debug("Debug mode is enabled")
 local failedCommand = 0
 
 
@@ -420,6 +415,5 @@ if musicify[command] then
     musicify[command](args)
 else
     print("Please provide a valid command. For usage, use `musicify help`.")
-    debug("Encountered a non-valid command")
 end
 return musicify
