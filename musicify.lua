@@ -51,6 +51,10 @@ local function play(songID)
       modem.transmit(serverChannel,serverChannel,songID)
     end
     print("Playing " .. getSongID(songID.name) .. " | " .. songID.author .. " - " .. songID.name)
+    term.write("Using repository ")
+    term.setTextColor(colors.blue)
+    print(index.indexName)
+    term.setTextColor(colors.white)
     print("Press CTRL+T to stop the song")
     local h = http.get({["url"] = songID.file, ["binary"] = true, ["redirect"] = true}) -- write in binary mode
     local even = true
