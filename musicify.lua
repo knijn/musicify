@@ -9,11 +9,10 @@ local autoUpdates = settings.get("musicify.autoUpdates",true)
 local modemBroadcast = settings.get("musicify.broadcast", true)
 local dfpwm = require("cc.audio.dfpwm")
 local indexURL = repo .. "?cb=" .. os.epoch("utc")
-local version = "2.3.0"
+local version = "2.3.1"
 local args = {...}
 local musicify = {}
 local speaker = peripheral.find("speaker")
-local i = 1
 local serverChannel = 2561
 local modem = peripheral.find("modem")
 local v = require("/libs/semver")
@@ -33,10 +32,7 @@ local index = textutils.unserialiseJSON(indexJSON)
 
 if not index then
     error("The index is malformed. Please make an issue on the github if it already doesn't exist",0)
-    return
 end
-
-
 
 local function getSongID(songname)
 for i in pairs(index.songs) do
@@ -105,8 +101,6 @@ if v(version) < v(index.latestVersion) then
     update()
 end
 
-
-
 musicify.help = function (arguments)
     print([[
 Usage: <action> [arguments]
@@ -174,28 +168,7 @@ end
 musicify.update = function (arguments)
     print("Updating Musicify, please hold on.")
     autoUpdates = true -- bypass autoupdate check
-    update() -- Calls the update function to re-download the source code from the stable branch
-end
-
-local getArtistList = function()
-    local artistList = {}
-    for i,o in pairs(index.songs) do
-        for i2,o2 in pairs(artistList) do
-            if o2 == o then
-                return
-            end
-        end
-        table.insert(artistList,index.songs[i].author)
-    end
-    return artistList
-end
-
-local printArtistSongs = function(artist)
-    for i in pairs(index.songs) do
-        if index.songs[i].author == artist then
-            print(i .. " | " .. index.songs[i].author .. " - " .. index.songs[i].name)
-        end
-    end
+    update() -- Calls the update function to re-download the latest release
 end
 
 musicify.list = function (arguments)
@@ -203,13 +176,6 @@ musicify.list = function (arguments)
       arguments[1] = uhgaeoygu
     end
     print("Format: `ID | Author - Name`")
-    local artists = getArtistList()
-    for i,o in pairs(artists) do
-        if arguments[1] == artists[i] then
-            printArtistSongs(artists[i])
-            return
-        end
-    end
     local buffer = ""
     local songAmount = #index.songs
     for i in pairs(index.songs) do -- Loop through all songs
@@ -256,31 +222,11 @@ musicify.shuffle = function (arguments)
         print("Currently in shuffle mode")
         local ranNum = math.random(from, to)
         play(index.songs[ranNum])
-
-        local function songLengthWait() -- Wait till the end of the song
-            sleep(index.songs[ranNum].time)
-        end
-
-        local function keyboardWait() -- Wait for keyboard presses
-            while true do
-                local event, key = os.pullEvent("key")
-                if key == keys.enter then
-                    print("Skipping!")
-                    break
-                elseif key == keys.q then
-                    musicify.stop()
-                    error("Stopped playing",0)
-                end
-            end
-        end
-
-            parallel.waitForAny(songLengthWait, keyboardWait)          -- Combine the two above functions
+        sleep(index.songs[ranNum].time)        -- Combine the two above functions
     end
 end
 
-
 musicify.play = function (arguments)
-    local artists = getArtistList()
     local songList = {}
     if arguments[1] == "all" then
         for i2,o2 in pairs(index.songs) do
@@ -310,17 +256,14 @@ end
 
 
 musicify.info = function (arguments)
-
     print("Latest version: " .. index.latestVersion)
     local devVer = v(version) > v(index.latestVersion)
-
     if devVer == true then
         print("Current version: " .. version .. " (Development Version)")
     else
         print("Current version: " .. version)
     end
     print("Repository name: " .. index.indexName)
-
 end
 
 musicify.loop = function (arguments)
@@ -353,7 +296,6 @@ musicify.playlist = function (arguments)
         local function songLengthWait() -- Wait till the end of the song
             sleep(index.songs[tonumber(songID)].time)
         end
-
         local function keyboardWait() -- Wait for keyboard presses
             while true do
                 local event, key = os.pullEvent("key")
@@ -366,7 +308,6 @@ musicify.playlist = function (arguments)
                 end
             end
         end
-
             parallel.waitForAny(songLengthWait, keyboardWait)          -- Combine the two above functions
     end
 end
@@ -382,7 +323,7 @@ musicify.random = function(args)
   play(index.songs[ranNum])
 end
 
-musicify.server = function(args)
+musicify.server = function(arguments)
   if not peripheral.find("modem") then
     error("You should have a modem installed")
   end
@@ -412,12 +353,8 @@ end
 command = table.remove(args, 1)
 musicify.index = index
 
-local failedCommand = 0
-
-
 if musicify[command] then
     musicify[command](args)
 else
     print("Please provide a valid command. For usage, use `musicify help`.")
 end
-return musicify
