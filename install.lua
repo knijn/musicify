@@ -1,5 +1,6 @@
 -- data[1].assets[1].browser_download_url
 local apiURL = "http://api.github.com/repos/knijn/musicify/releases"
+local baseRepoURL = "https://raw.githubusercontent.com/knijn/musicify/main"
 local args = {...}
 local skipcheck = false
 if args and args[1] == "y" then
@@ -34,6 +35,12 @@ while true do
     print("Installing now")
     shell.run("wget " .. url)
 
+    print("Downloading libraries right now")
+    shell.run("wget " .. baseRepoURL .. "/libs/semver.lua /libs/semver.lua")
+    shell.run("wget " .. baseRepoURL .. "/libs/youcube.lua /libs/youcube.lua")
+    print("Done!!")
     return
   end
 end
+
+
