@@ -8,6 +8,7 @@ end
 
 local servers = {
     "ws://localhost:5000",
+    "ws://oxygen.knijn.one:5000",
     "wss://youcube.onrender.com"
 }
 
