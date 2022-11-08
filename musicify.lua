@@ -9,7 +9,7 @@ local autoUpdates = settings.get("musicify.autoUpdates",true)
 local modemBroadcast = settings.get("musicify.broadcast", true)
 local dfpwm = require("cc.audio.dfpwm")
 local indexURL = repo .. "?cb=" .. os.epoch("utc")
-local version = "2.3.2"
+local version = "2.4.0"
 local args = {...}
 local musicify = {}
 local speaker = peripheral.find("speaker")
@@ -46,12 +46,15 @@ local function play(songID)
     if modem and modemBroadcast then
       modem.transmit(serverChannel,serverChannel,songID)
     end
-    print("Playing " .. getSongID(songID.name) .. " | " .. songID.author .. " - " .. songID.name)
-    term.write("Using repository ")
-    term.setTextColor(colors.blue)
-    print(index.indexName)
-    term.setTextColor(colors.white)
-    print("Press CTRL+T to stop the song")
+    if not gui then
+      print("Playing " .. getSongID(songID.name) .. " | " .. songID.author .. " - " .. songID.name)
+    
+        term.write("Using repository ")
+        term.setTextColor(colors.blue)
+        print(index.indexName)
+        term.setTextColor(colors.white)
+        print("Press CTRL+T to stop the song")
+    end
     local h = http.get({["url"] = songID.file, ["binary"] = true, ["redirect"] = true}) -- write in binary mode
     local even = true
     local decoder = dfpwm.make_decoder()
@@ -163,6 +166,40 @@ musicify.youcube = function (arguments)
             youcubeapi:get_chunk(chunkindex, id)
 
     end
+end
+
+musicify.gui = function (arguments)
+  local basalt = require("libs/basalt")
+  gui = true
+  if not basalt then
+    error("Basalt wasn't found or was installed incorrectly")
+  end
+  local main = basalt.createFrame()
+    
+  local function goHome()
+    list = main:addList()
+      :setPosition(2,2)
+      :setSize("parent.w - 2","parent.h - 6")
+    for i,o in pairs(index.songs) do
+      list:addItem(index.songs[i].author .. " - " .. index.songs[i].name)
+      
+    end
+    local function playDaSong()
+      play(index.songs[list:getItemIndex()])
+    end
+    local function threadedStartSong()
+      local thread = main:addThread()
+      thread:start(playDaSong)
+    end
+    local playButton = main:addButton()
+      :setPosition(2,"parent.h - 3")
+      :setSize(6,3)
+      :setText("Play")
+      :onClick(threadedStartSong)
+  end
+  goHome()
+
+  basalt.autoUpdate()
 end
 
 musicify.update = function (arguments)
