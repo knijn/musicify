@@ -16,6 +16,15 @@ wget run https://raw.githubusercontent.com/knijn/musicify/main/install.lua
 
 It should only take 13kB of data on your ComputerCraft computer.
 
+# Codespaces
+
+To develop under Codespaces, you'll need the CraftOS VSCode Extention and install CraftOS-PC with the following commands:
+```sh
+sudo add-apt-repository ppa:jackmacwindows/ppa
+sudo apt update
+sudo apt install craftos-pc
+```
+
 ## License
 
 Musicify is licensed under the [GNU General Public License v3.0](LICENSE).
