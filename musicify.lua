@@ -9,14 +9,14 @@ local autoUpdates = settings.get("musicify.autoUpdates",true)
 local modemBroadcast = settings.get("musicify.broadcast", true)
 local dfpwm = require("cc.audio.dfpwm")
 local indexURL = repo .. "?cb=" .. os.epoch("utc")
-local version = "2.4.0"
+local version = "2.5.0"
 local args = {...}
 local musicify = {}
 local speaker = peripheral.find("speaker")
 local serverChannel = 2561
 local modem = peripheral.find("modem")
 local v = require("/libs/semver")
-local YouCubeAPI = require("/libs/youcube")
+local YouCubeAPI = require("/libs/youcubeapi")
 
 if not speaker then -- Check if there is a speaker
   error("Speaker not found, refer to the wiki on how to set up Musicify",0)
@@ -120,51 +120,53 @@ musicify
 end
 
 musicify.youcube = function (arguments)
-    local youcubeapi = YouCubeAPI.new()
-    youcubeapi:detect_bestest_server()
     if not arguments or not arguments[1] then
         error("No URL was provided")
     end
-    local dfpwm = require("cc.audio.dfpwm")
-    local decoder = dfpwm.make_decoder()
-    
-    
     local url = arguments[1]
-    print("Requesting media ...")
-    youcubeapi:request_media(url)
 
-    local data = youcubeapi.websocket.receive()
-    data = textutils.unserialiseJSON(data)
+    local youcubeapi = YouCubeAPI.API.new()
+    local audiodevice = YouCubeAPI.Speaker.new(speaker)
 
-    if data.action == "error" then
-        error(data.message)
-    end
+    audiodevice:validate()
+    youcubeapi:detect_bestest_server()
+    
+    local function run(_url, no_close)
+      print("Requesting media ...")
+      local data = youcubeapi:request_media(_url)
 
-    local id = data.id
+      if data.action == "error" then
+          error(data.message)
+      end
 
-    local chunkindex = 0
+      local chunkindex = 0
 
-    youcubeapi:get_chunk(chunkindex, id)
-        while true do
-            local chunk = youcubeapi.websocket.receive()
+      while true do
+        local chunk = youcubeapi:get_chunk(chunkindex, data.id)
+          if chunk == "mister, the media has finished playing" then
+            print()
+            if data.playlist_videos then
+                return data.playlist_videos
+            end
 
-            if chunk == "Done playing" then
-                print()
-                youcubeapi.websocket.close()
+            if no_close then
                 return
             end
 
-            local buffer = decoder(chunk)
+            youcubeapi.websocket.close()
+            return
+          end
+          audiodevice:write(chunk)
+          chunkindex = chunkindex + 1
+      end
+    end
 
-            while not speaker.playAudio(buffer) do
-                os.pullEvent("speaker_audio_empty")
-            end
+    local playlist_videos = run(url)
 
-            chunkindex = chunkindex + 1
-
-
-            youcubeapi:get_chunk(chunkindex, id)
-
+    if playlist_videos then
+        for i, id in pairs(playlist_videos) do
+            run(id, true)
+        end
     end
 end
 

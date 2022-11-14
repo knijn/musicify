@@ -37,7 +37,7 @@ while true do
 
     print("Downloading libraries right now")
     shell.run("wget " .. baseRepoURL .. "/libs/semver.lua /libs/semver.lua")
-    shell.run("wget " .. baseRepoURL .. "/libs/youcube.lua /libs/youcube.lua")
+    shell.run("wget " .. baseRepoURL .. "/libs/youcubeapi.lua /libs/youcubeapi.lua")
     shell.run("wget " .. baseRepoURL .. "/libs/basalt.lua /libs/basalt.lua")
     print("Done!!")
     return
