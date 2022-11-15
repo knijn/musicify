@@ -15,8 +15,8 @@ local musicify = {}
 local speaker = peripheral.find("speaker")
 local serverChannel = 2561
 local modem = peripheral.find("modem")
-local v = require("/libs/semver")
-local YouCubeAPI = require("/libs/youcubeapi")
+local v = require("/lib/semver")
+local YouCubeAPI = require("/lib/youcubeapi")
 
 if not speaker then -- Check if there is a speaker
   error("Speaker not found, refer to the wiki on how to set up Musicify",0)
@@ -171,7 +171,7 @@ musicify.youcube = function (arguments)
 end
 
 musicify.gui = function (arguments)
-  local basalt = require("libs/basalt")
+  local basalt = require("lib/basalt")
   gui = true
   if not basalt then
     error("Basalt wasn't found or was installed incorrectly")
