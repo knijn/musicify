@@ -235,7 +235,6 @@ musicify.shuffle = function (arguments)
         print("Currently in shuffle mode")
         local ranNum = math.random(from, to)
         play(index.songs[ranNum])
-        sleep(index.songs[ranNum].time)        -- Combine the two above functions
     end
 end
 
