@@ -9,7 +9,7 @@ local autoUpdates = settings.get("musicify.autoUpdates",true)
 local modemBroadcast = settings.get("musicify.broadcast", true)
 local dfpwm = require("cc.audio.dfpwm")
 local indexURL = repo .. "?cb=" .. os.epoch("utc")
-local version = "3.0"
+local version = "3.1"
 local args = {...}
 local musicify = {}
 local speaker = peripheral.find("speaker")
