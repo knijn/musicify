@@ -9,7 +9,7 @@ local autoUpdates = settings.get("musicify.autoUpdates",true)
 local modemBroadcast = settings.get("musicify.broadcast", true)
 local dfpwm = require("cc.audio.dfpwm")
 local indexURL = repo .. "?cb=" .. os.epoch("utc")
-local version = "2.7"
+local version = "3.0"
 local args = {...}
 local musicify = {}
 local speaker = peripheral.find("speaker")
@@ -362,32 +362,32 @@ musicify.random = function(args)
   play(index.songs[ranNum])
 end
 
-musicify.server = function(arguments)
-  if not peripheral.find("modem") then
-    error("You should have a modem installed")
-  end
-  serverMode = true
-  modem = peripheral.find("modem")
-  modem.open(serverChannel)
-  local function listenLoop()
-    local event, side, ch, rch, msg, dist = os.pullEvent("modem_message")
-    if not type(msg) == "table" then
-      return
-    end
-    if msg.command and msg.args then
-      if msg.command == "shuffle" then -- make sure the server isn't unresponsive
-        return
-      end
-      if musicify[msg.command] then
-        print(msg.command)
-        musicify[msg.command](msg.args)
-      end
-    end
-   end
-  while true do
-    parallel.waitForAny(listenLoop)
-  end
-end
+--musicify.server = function(arguments)
+--  if not peripheral.find("modem") then
+--    error("You should have a modem installed")
+--  end
+--  serverMode = true
+--  modem = peripheral.find("modem")
+-- modem.open(serverChannel)
+--  local function listenLoop()
+--    local event, side, ch, rch, msg, dist = os.pullEvent("modem_message")
+--    if not type(msg) == "table" then
+--      return
+--    end
+--    if msg.command and msg.args then
+--      if msg.command == "shuffle" then -- make sure the server isn't unresponsive
+--        return
+--      end
+--      if musicify[msg.command] then
+--        print(msg.command)
+--        musicify[msg.command](msg.args)
+--      end
+--    end
+--   end
+--  while true do
+--    parallel.waitForAny(listenLoop)
+--  end
+--end
 
 command = table.remove(args, 1)
 musicify.index = index
