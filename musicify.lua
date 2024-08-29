@@ -308,7 +308,6 @@ musicify.loop = function (arguments)
     end
     while true do
     play(index.songs[tonumber(arguments[1])])
-    sleep(index.songs[tonumber(arguments[1])].time)
     end
 end
 
