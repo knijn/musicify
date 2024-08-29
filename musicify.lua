@@ -144,6 +144,7 @@ musicify.url = function (arguments)
   if string.find(arguments[1],"youtube") then
     print("Youtube support isn't garuanteed, proceed with caution")
   end
+  play(arguments[1])
 end
 
 musicify.youcube = function (arguments)
