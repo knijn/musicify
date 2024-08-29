@@ -133,13 +133,6 @@ musicify
 ]])
 end
 
-
-            youcubeapi.websocket.close()
-            return
-          end
-          audiodevice:write(chunk)
-          chunkindex = chunkindex + 1
-      end
 musicify.url = function (arguments) 
   if string.find(arguments[1],"youtube") then
     print("Youtube support isn't garuanteed, proceed with caution")
