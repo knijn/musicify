@@ -44,7 +44,23 @@ for i in pairs(index.songs) do
 end
 
 local function play(songID)
-    if modem and modemBroadcast then
+  if type(songID) == "string" then
+    local newSongID = {}
+    newSongID.file = songID
+    newSongID.name = songID
+    if string.find(songID,"flac") or string.find(songID,"wav") or string.find(songID,"mp3") or string.find(songID,"aac") or string.find(songID,"opus") or string.find(songID,"ogg") then
+      newSongID.file = "https://cc.alexdevs.me/dfpwm?url=" .. textutils.urlEncode(songID)
+      newSongID.author = "URL (converting)"
+    else
+      newSongID.author = "URL"
+    end
+    songID = newSongID
+
+    function getSongID()
+      return "from"
+    end
+  end	
+  if modem and modemBroadcast then
       modem.transmit(serverChannel,serverChannel,songID)
     end
     if not gui then
