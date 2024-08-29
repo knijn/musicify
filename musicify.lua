@@ -9,11 +9,12 @@ local autoUpdates = settings.get("musicify.autoUpdates",true)
 local modemBroadcast = settings.get("musicify.broadcast", true)
 local dfpwm = require("cc.audio.dfpwm")
 local indexURL = repo .. "?cb=" .. os.epoch("utc")
-local version = "2.7"
+local version = "3.0"
 local args = {...}
 local musicify = {}
 local speaker = peripheral.find("speaker")
-local serverChannel = 2561
+local serverChannel = settings.get("musicify.serverChannel", 2561)
+local serverMode = settings.get("musicify.serverMode", false) 
 local modem = peripheral.find("modem")
 local v = require("/lib/semver")
 local YouCubeAPI = require("/lib/youcubeapi")
@@ -43,16 +44,29 @@ for i in pairs(index.songs) do
 end
 
 local function play(songID)
-    if modem and modemBroadcast then
+  if type(songID) == "string" then
+    local newSongID = {}
+    newSongID.file = songID
+    newSongID.name = songID
+    if string.find(songID,"flac") or string.find(songID,"wav") or string.find(songID,"mp3") or string.find(songID,"aac") or string.find(songID,"opus") or string.find(songID,"ogg") then
+      newSongID.file = "https://cc.alexdevs.me/dfpwm?url=" .. textutils.urlEncode(songID)
+      newSongID.author = "URL (converting)"
+    else
+      newSongID.author = "URL"
+    end
+    songID = newSongID
+
+    function getSongID()
+      return "from"
+    end
+  end	
+  if modem and modemBroadcast then
       modem.transmit(serverChannel,serverChannel,songID)
     end
     if not gui then
       print("Playing " .. getSongID(songID.name) .. " | " .. songID.author .. " - " .. songID.name)
     
-        term.write("Using repository ")
-        term.setTextColor(colors.blue)
-        print(index.indexName)
-        term.setTextColor(colors.white)
+        print("")
         print("Press CTRL+T to stop the song")
     end
     local h = http.get({["url"] = songID.file, ["binary"] = true, ["redirect"] = true}) -- write in binary mode
@@ -61,7 +75,6 @@ local function play(songID)
     while true do
         local chunk = h.read(16 * 1024)
         if not chunk then break end
-        --print(chunk)
         local buffer = decoder(tostring(chunk))
         if songID.speed == 2 then
             error("Whoops!! You're trying to play unsupported audio, please use 48khz audio in your repository")
@@ -78,12 +91,13 @@ local function play(songID)
     h.close()
 end
 
+
 local function update()
     if not autoUpdates then
       error("It seems like you've disabled autoupdates, we're skipping this update", 0)
     end
     local s = shell.getRunningProgram()
-    handle = http.get("https://raw.githubusercontent.com/RubenHetKonijn/musicify/main/update.lua")
+    handle = http.get("https://raw.githubusercontent.com/knijn/musicify/main/update.lua")
     if not handle then
         error("Could not download new version, Please update manually.",0)
     else
@@ -119,55 +133,15 @@ musicify
 ]])
 end
 
+musicify.url = function (arguments) 
+  if string.find(arguments[1],"youtube") then
+    print("Youtube support isn't garuanteed, proceed with caution")
+  end
+  play(arguments[1])
+end
+
 musicify.youcube = function (arguments)
-    if not arguments or not arguments[1] then
-        error("No URL was provided")
-    end
-    local url = arguments[1]
-
-    local youcubeapi = YouCubeAPI.API.new()
-    local audiodevice = YouCubeAPI.Speaker.new(speaker)
-
-    audiodevice:validate()
-    youcubeapi:detect_bestest_server()
-    
-    local function run(_url, no_close)
-      print("Requesting media ...")
-      local data = youcubeapi:request_media(_url)
-
-      if data.action == "error" then
-          error(data.message)
-      end
-
-      local chunkindex = 0
-
-      while true do
-        local chunk = youcubeapi:get_chunk(chunkindex, data.id)
-          if chunk == "mister, the media has finished playing" then
-            print()
-            if data.playlist_videos then
-                return data.playlist_videos
-            end
-
-            if no_close then
-                return
-            end
-
-            youcubeapi.websocket.close()
-            return
-          end
-          audiodevice:write(chunk)
-          chunkindex = chunkindex + 1
-      end
-    end
-
-    local playlist_videos = run(url)
-
-    if playlist_videos then
-        for i, id in pairs(playlist_videos) do
-            run(id, true)
-        end
-    end
+  print("YouCube has been removed in favor of the new URL system. Please use `musicify url <url>` instead.")
 end
 
 musicify.gui = function (arguments)
@@ -186,12 +160,12 @@ musicify.gui = function (arguments)
       list:addItem(index.songs[i].author .. " - " .. index.songs[i].name)
       
     end
-    local function playDaSong()
+    local function startSong()
       play(index.songs[list:getItemIndex()])
     end
     local function threadedStartSong()
       local thread = main:addThread()
-      thread:start(playDaSong)
+      thread:start(startSong)
     end
     local playButton = main:addButton()
       :setPosition(2,"parent.h - 3")
@@ -212,7 +186,7 @@ end
 
 musicify.list = function (arguments)
     if not arguments then
-      arguments[1] = uhgaeoygu
+      arguments[1] = nil
     end
     print("Format: `ID | Author - Name`")
     local buffer = ""
@@ -267,7 +241,7 @@ end
 
 musicify.play = function (arguments)
     local songList = {}
-    if arguments[1] == "all" then
+    if arguments[1] == "all" then -- TODO: Make this NOT a mess
         for i2,o2 in pairs(index.songs) do
             local songID = "," .. tostring(i2)
             table.insert(songList,songID)
@@ -282,10 +256,6 @@ musicify.play = function (arguments)
         return
     end
 
-    if not arguments then
-        print("Resuming playback...")
-        return
-    end
     if not tonumber(arguments[1]) or not index.songs[tonumber(arguments[1])] then
         error("Please provide a valid track ID. Use `list` to see all valid track numbers.",0)
         return
@@ -312,13 +282,13 @@ musicify.loop = function (arguments)
     end
     while true do
     play(index.songs[tonumber(arguments[1])])
-    sleep(index.songs[tonumber(arguments[1])].time)
+    speaker.stopAudio()
     end
 end
 
 musicify.playlist = function (arguments)
     if not arguments[1] or not tostring(arguments[1]) or not fs.exists(arguments[1]) then
-        error("Please specify a correct file")
+        error("Please specify a playlist file to play")
     end
     local playlist = fs.open(arguments[1], "r") -- Load playlist file into a variable
     local list = playlist.readAll() -- Also load playlist file into a variable
@@ -332,7 +302,7 @@ musicify.playlist = function (arguments)
         print("Currently in playlist mode, press <Q> to exit. Use <Enter> to skip songs")
         play(index.songs[tonumber(songID)])
 
-        local function songLengthWait() -- Wait till the end of the song
+        local function songLengthWait() -- Wait until the end of the song
             sleep(index.songs[tonumber(songID)].time)
         end
         local function keyboardWait() -- Wait for keyboard presses
@@ -355,39 +325,13 @@ musicify.random = function(args)
   local from = args[1] or 1
   local to = args[2] or #index.songs
   if tostring(args[1]) and not tonumber(args[1]) and args[1] then -- Check if selection is valid
-    error("Please specify arguments in a form like `musicify shuffle 1 5`",0)
+    error("Please specify arguments in a form like `musicify random 1 5`",0)
     return
   end
   local ranNum = math.random(from, to)
   play(index.songs[ranNum])
 end
 
-musicify.server = function(arguments)
-  if not peripheral.find("modem") then
-    error("You should have a modem installed")
-  end
-  serverMode = true
-  modem = peripheral.find("modem")
-  modem.open(serverChannel)
-  local function listenLoop()
-    local event, side, ch, rch, msg, dist = os.pullEvent("modem_message")
-    if not type(msg) == "table" then
-      return
-    end
-    if msg.command and msg.args then
-      if msg.command == "shuffle" then -- make sure the server isn't unresponsive
-        return
-      end
-      if musicify[msg.command] then
-        print(msg.command)
-        musicify[msg.command](msg.args)
-      end
-    end
-   end
-  while true do
-    parallel.waitForAny(listenLoop)
-  end
-end
 
 command = table.remove(args, 1)
 musicify.index = index
