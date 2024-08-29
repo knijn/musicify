@@ -61,7 +61,6 @@ local function play(songID)
     while true do
         local chunk = h.read(16 * 1024)
         if not chunk then break end
-        --print(chunk)
         local buffer = decoder(tostring(chunk))
         if songID.speed == 2 then
             error("Whoops!! You're trying to play unsupported audio, please use 48khz audio in your repository")
@@ -358,32 +357,6 @@ musicify.random = function(args)
   play(index.songs[ranNum])
 end
 
---musicify.server = function(arguments)
---  if not peripheral.find("modem") then
---    error("You should have a modem installed")
---  end
---  serverMode = true
---  modem = peripheral.find("modem")
--- modem.open(serverChannel)
---  local function listenLoop()
---    local event, side, ch, rch, msg, dist = os.pullEvent("modem_message")
---    if not type(msg) == "table" then
---      return
---    end
---    if msg.command and msg.args then
---      if msg.command == "shuffle" then -- make sure the server isn't unresponsive
---        return
---      end
---      if musicify[msg.command] then
---        print(msg.command)
---        musicify[msg.command](msg.args)
---      end
---    end
---   end
---  while true do
---    parallel.waitForAny(listenLoop)
---  end
---end
 
 command = table.remove(args, 1)
 musicify.index = index
