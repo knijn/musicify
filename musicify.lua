@@ -355,7 +355,7 @@ musicify.random = function(args)
   local from = args[1] or 1
   local to = args[2] or #index.songs
   if tostring(args[1]) and not tonumber(args[1]) and args[1] then -- Check if selection is valid
-    error("Please specify arguments in a form like `musicify shuffle 1 5`",0)
+    error("Please specify arguments in a form like `musicify random 1 5`",0)
     return
   end
   local ranNum = math.random(from, to)
