@@ -212,7 +212,7 @@ end
 
 musicify.list = function (arguments)
     if not arguments then
-      arguments[1] = uhgaeoygu
+      arguments[1] = nil
     end
     print("Format: `ID | Author - Name`")
     local buffer = ""
