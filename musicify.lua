@@ -186,12 +186,12 @@ musicify.gui = function (arguments)
       list:addItem(index.songs[i].author .. " - " .. index.songs[i].name)
       
     end
-    local function playDaSong()
+    local function startSong()
       play(index.songs[list:getItemIndex()])
     end
     local function threadedStartSong()
       local thread = main:addThread()
-      thread:start(playDaSong)
+      thread:start(startSong)
     end
     local playButton = main:addButton()
       :setPosition(2,"parent.h - 3")
@@ -314,7 +314,7 @@ end
 
 musicify.playlist = function (arguments)
     if not arguments[1] or not tostring(arguments[1]) or not fs.exists(arguments[1]) then
-        error("Please specify a correct file")
+        error("Please specify a playlist file to play")
     end
     local playlist = fs.open(arguments[1], "r") -- Load playlist file into a variable
     local list = playlist.readAll() -- Also load playlist file into a variable
@@ -328,7 +328,7 @@ musicify.playlist = function (arguments)
         print("Currently in playlist mode, press <Q> to exit. Use <Enter> to skip songs")
         play(index.songs[tonumber(songID)])
 
-        local function songLengthWait() -- Wait till the end of the song
+        local function songLengthWait() -- Wait until the end of the song
             sleep(index.songs[tonumber(songID)].time)
         end
         local function keyboardWait() -- Wait for keyboard presses
