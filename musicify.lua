@@ -267,7 +267,7 @@ end
 
 musicify.play = function (arguments)
     local songList = {}
-    if arguments[1] == "all" then
+    if arguments[1] == "all" then -- TODO: Make this NOT a mess
         for i2,o2 in pairs(index.songs) do
             local songID = "," .. tostring(i2)
             table.insert(songList,songID)
