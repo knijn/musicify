@@ -14,6 +14,7 @@ local args = {...}
 local musicify = {}
 local speaker = peripheral.find("speaker")
 local serverChannel = settings.get("musicify.serverChannel", 2561)
+local serverMode = settings.get("musicify.serverMode", false) 
 local modem = peripheral.find("modem")
 local v = require("/lib/semver")
 local YouCubeAPI = require("/lib/youcubeapi")
