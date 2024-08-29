@@ -50,10 +50,7 @@ local function play(songID)
     if not gui then
       print("Playing " .. getSongID(songID.name) .. " | " .. songID.author .. " - " .. songID.name)
     
-        term.write("Using repository ")
-        term.setTextColor(colors.blue)
-        print(index.indexName)
-        term.setTextColor(colors.white)
+        print("")
         print("Press CTRL+T to stop the song")
     end
     local h = http.get({["url"] = songID.file, ["binary"] = true, ["redirect"] = true}) -- write in binary mode
@@ -78,12 +75,13 @@ local function play(songID)
     h.close()
 end
 
+
 local function update()
     if not autoUpdates then
       error("It seems like you've disabled autoupdates, we're skipping this update", 0)
     end
     local s = shell.getRunningProgram()
-    handle = http.get("https://raw.githubusercontent.com/RubenHetKonijn/musicify/main/update.lua")
+    handle = http.get("https://raw.githubusercontent.com/knijn/musicify/main/update.lua")
     if not handle then
         error("Could not download new version, Please update manually.",0)
     else
@@ -119,39 +117,6 @@ musicify
 ]])
 end
 
-musicify.youcube = function (arguments)
-    if not arguments or not arguments[1] then
-        error("No URL was provided")
-    end
-    local url = arguments[1]
-
-    local youcubeapi = YouCubeAPI.API.new()
-    local audiodevice = YouCubeAPI.Speaker.new(speaker)
-
-    audiodevice:validate()
-    youcubeapi:detect_bestest_server()
-    
-    local function run(_url, no_close)
-      print("Requesting media ...")
-      local data = youcubeapi:request_media(_url)
-
-      if data.action == "error" then
-          error(data.message)
-      end
-
-      local chunkindex = 0
-
-      while true do
-        local chunk = youcubeapi:get_chunk(chunkindex, data.id)
-          if chunk == "mister, the media has finished playing" then
-            print()
-            if data.playlist_videos then
-                return data.playlist_videos
-            end
-
-            if no_close then
-                return
-            end
 
             youcubeapi.websocket.close()
             return
@@ -159,15 +124,14 @@ musicify.youcube = function (arguments)
           audiodevice:write(chunk)
           chunkindex = chunkindex + 1
       end
-    end
+musicify.url = function (arguments) 
+  if string.find(arguments[1],"youtube") then
+    print("Youtube support isn't garuanteed, proceed with caution")
+  end
+end
 
-    local playlist_videos = run(url)
-
-    if playlist_videos then
-        for i, id in pairs(playlist_videos) do
-            run(id, true)
-        end
-    end
+musicify.youcube = function (arguments)
+  print("YouCube has been removed in favor of the new URL system. Please use `musicify url <url>` instead.")
 end
 
 musicify.gui = function (arguments)
@@ -308,6 +272,7 @@ musicify.loop = function (arguments)
     end
     while true do
     play(index.songs[tonumber(arguments[1])])
+    speaker.stopAudio()
     end
 end
 
