@@ -282,10 +282,6 @@ musicify.play = function (arguments)
         return
     end
 
-    if not arguments then
-        print("Resuming playback...")
-        return
-    end
     if not tonumber(arguments[1]) or not index.songs[tonumber(arguments[1])] then
         error("Please provide a valid track ID. Use `list` to see all valid track numbers.",0)
         return
