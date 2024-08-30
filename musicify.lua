@@ -74,7 +74,7 @@ local function play(songID)
     while true do
         local chunk = h.read(16 * 1024)
         if not chunk then break end
-        local buffer = decoder(tostring(chunk))
+        local buffer = decoder(chunk)
         if songID.speed == 2 then
             error("Whoops!! You're trying to play unsupported audio, please use 48khz audio in your repository")
         end
