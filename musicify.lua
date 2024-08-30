@@ -6,7 +6,6 @@ end
 settings.load()
 local repo = settings.get("musicify.repo","https://raw.githubusercontent.com/knijn/musicify-songs/main/index.json")
 local autoUpdates = settings.get("musicify.autoUpdates",true)
-local modemBroadcast = settings.get("musicify.broadcast", true)
 local dfpwm = require("/lib/dfpwm")
 local indexURL = repo .. "?cb=" .. os.epoch("utc")
 local version = "3.1"
@@ -73,7 +72,7 @@ local function play(songID)
         local chunk = h.read(16 * 1024)
         if not chunk then break end
         local buffer = decoder(chunk)
-        if modem and modemBroadcast then
+        if modem and serverMode then
           modem.transmit(serverChannel,serverChannel,buffer)
         end
 
