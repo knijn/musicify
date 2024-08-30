@@ -68,8 +68,8 @@ local function play(songID)
         print("")
         print("Press CTRL+T to stop the song")
     end
-    local h = http.get({["url"] = songID.file, ["binary"] = true, ["redirect"] = true}) -- write in binary mode
-    local even = true
+    local h, err = http.get({["url"] = songID.file, ["binary"] = true, ["redirect"] = true}) -- write in binary mode
+    if not h then error("Failed to download song: " .. err) end
     local decoder = dfpwm.make_decoder()
     while true do
         local chunk = h.read(16 * 1024)
@@ -80,11 +80,6 @@ local function play(songID)
         end
         while not speaker.playAudio(buffer) do
             os.pullEvent("speaker_audio_empty")
-        end
-        if even then
-            even = false
-        else
-            even = true
         end
     end
     h.close()
