@@ -96,20 +96,7 @@ local function update()
     if not autoUpdates then
       error("It seems like you've disabled autoupdates, we're skipping this update", 0)
     end
-    local s = shell.getRunningProgram()
-    handle = http.get("https://raw.githubusercontent.com/knijn/musicify/main/install.lua")
-    if not handle then
-        error("Could not download new version, Please update manually.",0)
-    else
-        data = handle.readAll()
-        local f = fs.open(".musicify_updater", "w")
-        handle.close()
-        f.write(data)
-        f.close()
-        shell.run(".musicify_updater", "y")
-        fs.delete(".musicify_updater")
-        return
-    end
+    shell.run("wget run https://raw.githubusercontent.com/knijn/musicify/main/install.lua")
 end
 
 if v(version) < v(index.latestVersion) then
