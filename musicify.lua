@@ -8,7 +8,7 @@ local repo = settings.get("musicify.repo","https://raw.githubusercontent.com/kni
 local autoUpdates = settings.get("musicify.autoUpdates",true)
 local dfpwm = require("/lib/dfpwm")
 local indexURL = repo .. "?cb=" .. os.epoch("utc")
-local version = "3.1"
+local version = "3.2"
 local args = {...}
 local musicify = {}
 local speaker = peripheral.find("speaker")
@@ -63,7 +63,7 @@ local function play(songID)
       return "from"
     end
   end	
-  
+
     if not gui then
       print("Playing " .. getSongID(songID.name) .. " | " .. songID.author .. " - " .. songID.name)
     
