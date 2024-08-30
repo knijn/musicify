@@ -17,7 +17,6 @@ local serverChannel = settings.get("musicify.serverChannel", 2561)
 local serverMode = settings.get("musicify.serverMode", false) 
 local modem = peripheral.find("modem")
 local v = require("/lib/semver")
-local YouCubeAPI = require("/lib/youcubeapi")
 
 if not speaker then -- Check if there is a speaker
   error("Speaker not found, refer to the wiki on how to set up Musicify",0)
