@@ -33,6 +33,7 @@ while true do
       error("Cancelled Installation")
     end
     print("Installing now")
+    shell.run("rm musicify")
     shell.run("wget " .. url)
 
     print("Downloading libraries right now")
@@ -40,7 +41,6 @@ while true do
     shell.run("rm /lib/youcubeapi.lua")
     shell.run("rm /lib/basalt.lua")
     shell.run("rm /lib/dfpwm.lua")
-    shell.run("rm musicify")
     shell.run("wget " .. baseRepoURL .. "/lib/semver.lua /lib/semver.lua")
     shell.run("wget " .. baseRepoURL .. "/lib/dfpwm.lua /lib/dfpwm.lua")
     shell.run("wget " .. baseRepoURL .. "/lib/youcubeapi.lua /lib/youcubeapi.lua")
