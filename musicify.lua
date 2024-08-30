@@ -91,7 +91,7 @@ local function update()
       error("It seems like you've disabled autoupdates, we're skipping this update", 0)
     end
     local s = shell.getRunningProgram()
-    handle = http.get("https://raw.githubusercontent.com/knijn/musicify/main/update.lua")
+    handle = http.get("https://raw.githubusercontent.com/knijn/musicify/main/install.lua")
     if not handle then
         error("Could not download new version, Please update manually.",0)
     else
@@ -100,7 +100,7 @@ local function update()
         handle.close()
         f.write(data)
         f.close()
-        shell.run(".musicify_updater")
+        shell.run(".musicify_updater", "y")
         fs.delete(".musicify_updater")
         return
     end
