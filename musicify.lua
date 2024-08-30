@@ -288,12 +288,12 @@ musicify.info = function (arguments)
 end
 
 musicify.loop = function (arguments)
-    if tostring(arguments[1]) and not tonumber(arguments[1]) then
-        error("Please specify a song ID",0)
-        return
-    end
     while true do
-    play(index.songs[tonumber(arguments[1])])
+      if tonumber(arguments[1]) then
+        play(index.songs[tonumber(arguments[1])])
+      elseif tostring(arguments[1]) then
+        play(arguments[1])
+      end
     speaker.stopAudio()
     end
 end
