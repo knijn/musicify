@@ -14,7 +14,6 @@ To install, run
 wget run https://raw.githubusercontent.com/knijn/musicify/main/install.lua
 ```
 
-It should only take 13kB of data on your ComputerCraft computer.
 
 # Codespaces
 
@@ -29,11 +28,47 @@ sudo apt install craftos-pc
 
 Musicify is licensed under the [GNU General Public License v3.0](LICENSE).
 
-## Confused?
+## Commands
 
-If you are confused about how to setup Musicify, please [check the wiki page](https://github.com/knijn/musicify/wiki/Setup-Musicify) for further help.
+### musicify help
+Shows the help menu showing all commands
 
-`* Disclaimer: Musicify does not stream from a server. It reads files from a local Tape Drive.`
+### musicify list
+Shows all of the playable songs in the repository set
+
+### musicify info
+Displays info about the current version of Musicify, and about the repository set
+
+### musicify play <id>
+Plays the song with the specified ID
+
+### musicify playlist <file>
+A playlist file has the following format: `<songid>,<songid>,<songid>,<songid>`. These song IDs can be found using musicify list. And can also be URLs.
+
+## musicify gui
+Show an in development GUI
+
+## musicify shuffle [from] [to]
+Shuffle the songs in the repository, and optionally from and to a specific song id
+
+## musicify update
+Forces an update on Musicify
+
+## musicify loop <id>
+Loops over a specific song or URL
+
+## musicify url <url>
+Plays a specific URL
+
+## Setup
+
+Set up your Computer with the install command above. Make sure to have a speaker and a modem (or ender modem) attached if you want to use multiple speakers
+
+Musicify offers the following configuration options:
+- `musicify.repo`: Sets the repo to music load from (default: `https://raw.githubusercontent.com/knijn/musicify-songs/main/index.json`)
+- `musicify.autoUpdates`: Sets whether Musicify will automatically update when there's a new version. (default: `true`)
+- `musicify.serverChannel`: Sets the channel to broadcast audio packets on
+- `musicify.serverMode`: Sets whether Musicify will broadcast audio packets
 
 ## Development
 
