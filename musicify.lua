@@ -7,7 +7,7 @@ settings.load()
 local repo = settings.get("musicify.repo","https://raw.githubusercontent.com/knijn/musicify-songs/main/index.json")
 local autoUpdates = settings.get("musicify.autoUpdates",true)
 local modemBroadcast = settings.get("musicify.broadcast", true)
-local dfpwm = require("cc.audio.dfpwm")
+local dfpwm = require("/lib/dfpwm")
 local indexURL = repo .. "?cb=" .. os.epoch("utc")
 local version = "3.1"
 local args = {...}
@@ -70,7 +70,7 @@ local function play(songID)
     end
     local h, err = http.get({["url"] = songID.file, ["binary"] = true, ["redirect"] = true}) -- write in binary mode
     if not h then error("Failed to download song: " .. err) end
-    local decoder = dfpwm.make_decoder()
+    local decoder = dfpwm.make_intdecoder()
     while true do
         local chunk = h.read(16 * 1024)
         if not chunk then break end
