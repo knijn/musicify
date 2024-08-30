@@ -42,6 +42,11 @@ for i in pairs(index.songs) do
 end
 
 local function play(songID)
+  if type(songID) == "table" then
+    if string.find(songID.file,"flac") or string.find(songID.file,"wav") or string.find(songID.file,"mp3") or string.find(songID.file,"aac") or string.find(songID.file,"opus") or string.find(songID.file,"ogg") then
+      songID.file = "https://cc.alexdevs.me/dfpwm?url=" .. textutils.urlEncode(songID.file)
+    end
+  end
   if type(songID) == "string" then
     local newSongID = {}
     newSongID.file = songID
