@@ -117,13 +117,16 @@ musicify.help = function (arguments)
 Usage: <action> [arguments]
 Actions:
 musicify
-    help       -- Displays this message
-    list       -- Displays a list of song you can play
-    play <id>  -- Plays the specified song by it's ID
+    help    -- Displays this message
+    list    -- Displays a list of songs you can play
+    info    -- Displays information about Musicify's version and repo
+    play <id>           -- Plays the specified song by it's ID
+    playlist <file>     -- Plays a playlist file
+    gui                 -- Starts the GUI (WIP)
     shuffle [from] [to] -- Starts shuffle mode in the specified range
-    update     -- Updates musicify
-    loop <id>  -- Loop on a specific song
-    youcube <url> -- Play a song from a URL
+    update  -- Updates musicify
+    loop <id>           -- Loop on a specific song
+    url <url>           -- Play a song from a URL
 ]])
 end
 
