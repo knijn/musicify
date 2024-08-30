@@ -130,6 +130,21 @@ musicify
 ]])
 end
 
+musicify.client = function (arguments)
+  if not modem then error("There needs to be a modem attached") end
+  while true do
+    
+    modem.open(serverChannel)
+    print("Listening on " .. serverChannel)
+    local event, side, channel, replyChannel, message, distance = os.pullEvent("modem_message")
+    if channel == serverChannel and replyChannel == serverChannel then
+      while not speaker.playAudio(message) do
+        os.pullEvent("speaker_audio_empty")
+    end
+    end
+  end
+end
+
 musicify.url = function (arguments) 
   if string.find(arguments[1],"youtube") then
     print("Youtube support isn't garuanteed, proceed with caution")
