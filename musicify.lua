@@ -312,10 +312,15 @@ musicify.playlist = function (arguments)
     end
     for i,songID in pairs(toPlay) do
         print("Currently in playlist mode, press <Q> to exit. Use <Enter> to skip songs")
-        play(index.songs[tonumber(songID)])
+        
+        
 
         local function songLengthWait() -- Wait until the end of the song
-            sleep(index.songs[tonumber(songID)].time)
+          if tonumber(songID) then  
+            play(index.songs[tonumber(songID)])
+          elseif tostring(songID) then
+            play(songID)
+          end
         end
         local function keyboardWait() -- Wait for keyboard presses
             while true do
