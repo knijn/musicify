@@ -11,15 +11,18 @@ local indexURL = repo .. "?cb=" .. os.epoch("utc")
 local version = "3.3.0"
 local args = {...}
 local musicify = {}
-local speaker = peripheral.find("speaker")
+local speakers = {peripheral.find("speaker")}
 local serverChannel = settings.get("musicify.serverChannel", 2561)
-local serverMode = settings.get("musicify.serverMode", false) 
+local serverMode = settings.get("musicify.serverMode", false)
 local modem = peripheral.find("modem")
 local v = require("/lib/semver")
 local volume = settings.get("musicify.volume",1)
+local softVolume = settings.get("musicify.softVolume",1)
+local audioCalls = {}
+local buffer
 
-if not speaker then -- Check if there is a speaker
-  error("Speaker not found, refer to the wiki on how to set up Musicify",0)
+if not speakers then -- Check if there is a speaker
+  error("Speaker(s) not found, refer to the wiki on how to set up Musicify",0)
 end
 
 local handle , msg = http.get(indexURL)
@@ -63,21 +66,29 @@ local function play(songID)
     function getSongID()
       return "from"
     end
-  end	
+  end
 
     if not gui then
       print("Playing " .. getSongID(songID.name) .. " | " .. songID.author .. " - " .. songID.name)
-    
+
         print("")
         print("Press CTRL+T to stop the song")
     end
     local h, err = http.get({["url"] = songID.file, ["binary"] = true, ["redirect"] = true}) -- write in binary mode
     if not h then error("Failed to download song: " .. err) end
-    local decoder = dfpwm.make_intdecoder()
+    local decoder = dfpwm.make_decoder()
     while true do
         local chunk = h.read(16 * 1024)
         if not chunk then break end
-        local buffer = decoder(chunk)
+        buffer = decoder(chunk)
+        for i,_ in pairs(buffer) do
+          buffer[i] = buffer[i] * softVolume
+          if buffer[i] > 127 then
+            buffer[i] = 127
+          elseif buffer[i] < -127 then
+            buffer[i] = -127
+          end
+        end
         if modem and serverMode then
           modem.transmit(serverChannel,serverChannel,buffer)
         end
@@ -85,9 +96,10 @@ local function play(songID)
         if songID.speed == 2 then
             error("Whoops!! You're trying to play unsupported audio, please use 48khz audio in your repository")
         end
-        while not speaker.playAudio(buffer,volume) do
-            os.pullEvent("speaker_audio_empty")
-        end
+
+
+
+        parallel.waitForAll(table.unpack(audioCalls))
     end
     h.close()
 end
@@ -127,19 +139,18 @@ end
 musicify.client = function (arguments)
   if not modem then error("There needs to be a modem attached") end
   while true do
-    
+
     modem.open(serverChannel)
     print("Listening on " .. serverChannel)
     local event, side, channel, replyChannel, message, distance = os.pullEvent("modem_message")
     if channel == serverChannel and replyChannel == serverChannel then
-      while not speaker.playAudio(message) do
-        os.pullEvent("speaker_audio_empty")
-    end
+      buffer = message
+      parallel.waitForAll(table.unpack(audioCalls))
     end
   end
 end
 
-musicify.url = function (arguments) 
+musicify.url = function (arguments)
   if string.find(arguments[1],"youtube") then
     print("Youtube support isn't garuanteed, proceed with caution")
   end
@@ -157,14 +168,14 @@ musicify.gui = function (arguments)
     error("Basalt wasn't found or was installed incorrectly")
   end
   local main = basalt.createFrame()
-    
+
   local function goHome()
     list = main:addList()
       :setPosition(2,2)
       :setSize("parent.w - 2","parent.h - 6")
     for i,o in pairs(index.songs) do
       list:addItem(index.songs[i].author .. " - " .. index.songs[i].name)
-      
+
     end
     local function startSong()
       play(index.songs[list:getItemIndex()])
@@ -305,11 +316,11 @@ musicify.playlist = function (arguments)
     end
     for i,songID in pairs(toPlay) do
         print("Currently in playlist mode, press <Q> to exit. Use <Enter> to skip songs")
-        
-        
+
+
 
         local function songLengthWait() -- Wait until the end of the song
-          if tonumber(songID) then  
+          if tonumber(songID) then
             play(index.songs[tonumber(songID)])
           elseif tostring(songID) then
             play(songID)
@@ -345,6 +356,12 @@ end
 
 command = table.remove(args, 1)
 musicify.index = index
+
+for spkr,dev in pairs(speakers) do
+    table.insert(audioCalls,function()
+    coroutine.resume(coroutine.create(function()dev.playAudio(buffer,volume)end))end)
+    table.insert(audioCalls,function()repeat _,which=os.pullEvent("speaker_audio_empty") if which==peripheral.getName(dev) or which=="flush" then break end until(false)end)
+  end
 
 if musicify[command] then
     musicify[command](args)
