@@ -16,6 +16,7 @@ local serverChannel = settings.get("musicify.serverChannel", 2561)
 local serverMode = settings.get("musicify.serverMode", false) 
 local modem = peripheral.find("modem")
 local v = require("/lib/semver")
+local volume = settings.get("musicify.volume",1)
 
 if not speaker then -- Check if there is a speaker
   error("Speaker not found, refer to the wiki on how to set up Musicify",0)
@@ -84,7 +85,7 @@ local function play(songID)
         if songID.speed == 2 then
             error("Whoops!! You're trying to play unsupported audio, please use 48khz audio in your repository")
         end
-        while not speaker.playAudio(buffer) do
+        while not speaker.playAudio(buffer,volume) do
             os.pullEvent("speaker_audio_empty")
         end
     end
