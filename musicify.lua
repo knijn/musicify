@@ -8,7 +8,7 @@ local repo = settings.get("musicify.repo","https://raw.githubusercontent.com/kni
 local autoUpdates = settings.get("musicify.autoUpdates",true)
 local dfpwm = require("/lib/dfpwm")
 local indexURL = repo .. "?cb=" .. os.epoch("utc")
-local version = "3.2.1"
+local version = "3.3.0"
 local args = {...}
 local musicify = {}
 local speaker = peripheral.find("speaker")
