@@ -78,5 +78,5 @@ If you want to support the program, please make a pull request. It helps out a t
 If you want to run the development version of Musicify, run
 
 ```shell
-wget run https://raw.githubusercontent.com/knijn/musicify/mian/git_install.lua
+wget run https://raw.githubusercontent.com/knijn/musicify/main/git_install.lua
 ```
