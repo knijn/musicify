@@ -361,7 +361,7 @@ for spkr,dev in pairs(speakers) do
     table.insert(audioCalls,function()
     coroutine.resume(coroutine.create(function()dev.playAudio(buffer,volume)end))end)
     table.insert(audioCalls,function()repeat _,which=os.pullEvent("speaker_audio_empty") if which==peripheral.getName(dev) or which=="flush" then break end until(false)end)
-  end
+end
 
 if musicify[command] then
     musicify[command](args)
