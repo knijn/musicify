@@ -1,2 +1,6 @@
 shell.run("rm musicify.lua")
 shell.run("wget https://raw.githubusercontent.com/knijn/musicify/main/musicify.lua")
+shell.run("mkdir /lib")
+shell.run("wget https://raw.githubusercontent.com/knijn/musicify/refs/heads/main/lib/semver.lua /lib/semver.lua")
+shell.run("wget https://raw.githubusercontent.com/knijn/musicify/refs/heads/main/lib/basalt.lua /lib/basalt.lua")
+shell.run("wget https://raw.githubusercontent.com/knijn/musicify/refs/heads/main/lib/youcubeapi.lua /lib/youcubeapi.lua")
