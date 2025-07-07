@@ -6,7 +6,7 @@ end
 settings.load()
 local repo = settings.get("musicify.repo","https://raw.githubusercontent.com/knijn/musicify-songs/main/index.json")
 local autoUpdates = settings.get("musicify.autoUpdates",true)
-local dfpwm = require("/lib/dfpwm")
+local dfpwm = require("cc.audio.dfpwm")
 local indexURL = repo .. "?cb=" .. os.epoch("utc")
 local version = "3.3.0"
 local args = {...}
